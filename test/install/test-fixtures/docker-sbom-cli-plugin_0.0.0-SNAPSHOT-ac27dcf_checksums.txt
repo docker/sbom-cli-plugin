@@ -1,0 +1,6 @@
+0b4629c37b1b96db6925ec1aca80cfa3fc1530e806e31e6cafb0830ab4d50b4b  docker-sbom-cli-plugin_0.0.0-SNAPSHOT-ac27dcf_linux_amd64.tar.gz
+3dc8ef313fe5e6b026688eb248d1ec6f52ebec2cc2bb193590b9d6aacb78970b  docker-sbom-cli-plugin_0.0.0-SNAPSHOT-ac27dcf_linux_arm64.tar.gz
+45bac6ead378d1e39aecc2dea5c1f9d3a7419b165bb15162f4ead185dbf0c673  docker-sbom-cli-plugin_0.0.0-SNAPSHOT-ac27dcf_darwin_amd64.tar.gz
+7c8722542d6246c948d833a876271ab236bc5120f8475e3075d3153856ad8024  docker-sbom-cli-plugin_0.0.0-SNAPSHOT-ac27dcf_darwin_arm64.tar.gz
+9d959b164af7af4ebb4a491145e8524817ba1d546f8bda7b635eb29304c0ad10  docker-sbom-cli-plugin_0.0.0-SNAPSHOT-ac27dcf_windows_arm64.zip
+f516eb22558acaa1ffc2534d23c2038e43ddd0f16d4211d8c21cd872dc9750a2  docker-sbom-cli-plugin_0.0.0-SNAPSHOT-ac27dcf_windows_amd64.zip
