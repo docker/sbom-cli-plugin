@@ -26,7 +26,7 @@ endef
 test: unit acceptance
 
 .PHONY: ci-test-mac
-ci-test-mac: unit-local acceptance-local
+ci-test-mac: acceptance-local
 
 # note: do not add acceptance-local to this list
 acceptance: acceptance-ubuntu-20.04 acceptance-alpine-3.6
@@ -38,7 +38,7 @@ unit-local:
 	@for f in $(shell ls *_test.sh); do echo "Running unit test suite '$${f}'"; bash $${f} || exit 1; done
 
 acceptance-local:
-	$(acceptance)
+	$(CURL_INSTALL_SYFT) && $(ACCEPTANCE_CMD)
 
 save: ubuntu-20.04 alpine-3.6
 	@mkdir cache || true
