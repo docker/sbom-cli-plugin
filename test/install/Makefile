@@ -6,13 +6,15 @@ ALPINE_IMAGE=$(IMAGE_NAME):alpine-3.6
 BUSYBOX_IMAGE=busybox:1.35
 
 ENVS=./environments
-DOCKER_RUN=docker run --rm -t -w /project/test/install -v $(shell pwd)/../../:/project
+DOCKER_RUN=docker run --rm -t -w /project/test/install -v /var/run/docker.sock:/var/run/docker.sock -v $(shell pwd)/../../:/project
 UNIT=make unit-local
 
 # acceptance testing is running the current install.sh against the latest release. Note: this could be a problem down
 # the line if there are breaking changes made that don't align with the latest release (but will be OK with the next
 # release)
-acceptance=sh -c 'curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin && ../../install.sh && docker sbom version'
+CURL_INSTALL_SYFT=curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+WGET_INSTALL_SYFT=wget -O - https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+ACCEPTANCE_CMD=../../install.sh && docker sbom version
 
 # CI cache busting values; change these if you want CI to not use previous stored cache
 INSTALL_TEST_CACHE_BUSTER=894d8ca
@@ -55,7 +57,7 @@ load:
 acceptance-ubuntu-20.04: ubuntu-20.04
 	$(call title,ubuntu:20.04 - acceptance)
 	$(DOCKER_RUN) $(UBUNTU_IMAGE) \
-		$(acceptance)
+		sh -c '$(CURL_INSTALL_SYFT) && $(ACCEPTANCE_CMD)'
 
 unit-ubuntu-20.04: ubuntu-20.04
 	$(call title,ubuntu:20.04 - unit)
@@ -73,7 +75,7 @@ ubuntu-20.04:
 acceptance-alpine-3.6: alpine-3.6
 	$(call title,alpine:3.6 - acceptance)
 	$(DOCKER_RUN) $(ALPINE_IMAGE) \
-		$(acceptance)
+		sh -c '$(WGET_INSTALL_SYFT) && $(ACCEPTANCE_CMD)'
 
 alpine-3.6:
 	$(call title,alpine:3.6 - build environment)
@@ -88,7 +90,7 @@ alpine-3.6:
 acceptance-busybox-1.35: busybox-1.35
 	$(call title,busybox-1.35 - acceptance)
 	$(DOCKER_RUN) $(BUSYBOX_IMAGE) \
-		$(acceptance)
+		sh -c '$(WGET_INSTALL_SYFT) && $(ACCEPTANCE_CMD)'
 
 busybox-1.35:
 	$(call title,busybox-1.35 - build environment)

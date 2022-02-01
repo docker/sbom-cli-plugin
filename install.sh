@@ -715,7 +715,7 @@ main() (
   log_info "using release tag='${tag}' version='${version}' os='${os}' arch='${arch}'"
   log_debug "downloading files into ${download_dir}"
 
-  download_and_install_asset "${download_url}" "${download_dir}" "${install_dir}" "${BINARY}" "${os}" "${arch}" "${version}" "${format}" "${binary}"
+  download_and_install_asset "${download_url}" "${download_dir}" "${install_dir}" "${PROJECT_NAME}" "${os}" "${arch}" "${version}" "${format}" "${binary}"
 
   # don't continue if we couldn't install the asset
   if [ "$?" != "0" ]; then

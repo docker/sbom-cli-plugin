@@ -99,6 +99,27 @@ unit:  ## Run unit tests
 	$(call title,Running unit tests)
 	go test $(shell go list ./... | grep -v anchore/$(REPO)/test)
 
+# note: this is used by CI to determine if the install test fixture cache (docker image tars) should be busted
+install-fingerprint:
+	cd test/install && \
+		make cache.fingerprint
+
+install-test: $(SNAPSHOT_DIR)
+	cd test/install && \
+		make
+
+install-test-cache-save: $(SNAPSHOT_DIR)
+	cd test/install && \
+		make save
+
+install-test-cache-load: $(SNAPSHOT_DIR)
+	cd test/install && \
+		make load
+
+install-test-ci-mac: $(SNAPSHOT_DIR)
+	cd test/install && \
+		make ci-test-mac
+
 $(SNAPSHOT_DIR): $(TEMP_DIR) ## Build snapshot release binaries and packages
 	$(call title,Building snapshot artifacts)
 	# create a config with the dist dir overridden
@@ -114,7 +135,6 @@ release: clean-dist ## Build and publish final binaries and packages
 
 .PHONY: clean
 clean: clean-dist clean-snapshot clean-changelog ## Remove previous builds, result reports, and caches
-	rm -rf $(RESULT_DIR)/*
 
 .PHONY: clean-snapshot
 clean-snapshot:
