@@ -2,11 +2,14 @@
 
 Plugin for Docker CLI to support SBOM creation using Syft.
 
-**Note: this is a work in progress**
+**Note: this is a proof of concept / work in progress**
 
 ## Getting started
 
 ```
+# install syft
+curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
 # build
 make snapshot
 
