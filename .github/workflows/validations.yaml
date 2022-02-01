@@ -141,6 +141,13 @@ jobs:
           path: ${{ github.workspace }}/test/install/cache
           key: ${{ runner.os }}-install-test-image-cache-${{ hashFiles('test/install/cache.fingerprint') }}
 
+      - name: Restore tool cache
+        id: tool-cache
+        uses: actions/cache@v2.1.3
+        with:
+          path: ${{ github.workspace }}/.tmp
+          key: ${{ runner.os }}-tool-${{ hashFiles('Makefile') }}
+
       - name: Load test image cache
         if: steps.install-test-image-cache.outputs.cache-hit == 'true'
         run: make install-test-cache-load
