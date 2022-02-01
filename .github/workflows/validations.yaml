@@ -128,9 +128,6 @@ jobs:
           name: artifacts
           path: snapshot
 
-      - name: Install docker CLI
-        run: brew install docker
-
       - name: Build key for image cache
         run: make install-fingerprint
 
@@ -159,7 +156,6 @@ jobs:
         if: steps.install-test-image-cache.outputs.cache-hit != 'true'
         run: make install-test-cache-save
 
-
   Acceptance-Mac:
     # Note: changing this job name requires making the same update in the .github/workflows/release.yaml pipeline
     name: "Acceptance tests (Mac)"
@@ -172,6 +168,9 @@ jobs:
         with:
           name: artifacts
           path: snapshot
+
+      - name: Install docker CLI
+        run: brew install docker
 
       - name: Run install.sh tests (Mac)
         run: make install-test-ci-mac

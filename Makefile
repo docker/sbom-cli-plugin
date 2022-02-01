@@ -17,11 +17,6 @@ RESET := $(shell tput -T linux sgr0)
 TITLE := $(BOLD)$(PURPLE)
 SUCCESS := $(BOLD)$(GREEN)
 
-
-ifeq "$(strip $(VERSION))" ""
- override VERSION = $(shell git describe --always --tags --dirty)
-endif
-
 ## Variable assertions
 
 ifndef TEMP_DIR
