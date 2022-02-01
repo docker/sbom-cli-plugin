@@ -43,7 +43,7 @@ all: clean static-analysis test ## Run all linux-based checks (linting, license 
 	@printf '$(SUCCESS)All checks pass!$(RESET)\n'
 
 .PHONY: test
-test: unit ## Run all tests
+test: unit install-test ## Run all tests
 
 .PHONY: bootstrap-tools
 bootstrap-tools: $(TEMP_DIR)

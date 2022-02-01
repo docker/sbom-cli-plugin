@@ -3,7 +3,6 @@ NAME=docker-sbom-cli-plugin
 IMAGE_NAME=$(NAME)-install.sh-env
 UBUNTU_IMAGE=$(IMAGE_NAME):ubuntu-20.04
 ALPINE_IMAGE=$(IMAGE_NAME):alpine-3.6
-BUSYBOX_IMAGE=busybox:1.35
 
 ENVS=./environments
 DOCKER_RUN=docker run --rm -t -w /project/test/install -v /var/run/docker.sock:/var/run/docker.sock -v $(shell pwd)/../../:/project
@@ -30,7 +29,7 @@ test: unit acceptance
 ci-test-mac: unit-local acceptance-local
 
 # note: do not add acceptance-local to this list
-acceptance: acceptance-ubuntu-20.04 acceptance-alpine-3.6 acceptance-busybox-1.35
+acceptance: acceptance-ubuntu-20.04 acceptance-alpine-3.6
 
 unit: unit-ubuntu-20.04
 
@@ -41,16 +40,14 @@ unit-local:
 acceptance-local:
 	$(acceptance)
 
-save: ubuntu-20.04 alpine-3.6 busybox-1.35
+save: ubuntu-20.04 alpine-3.6
 	@mkdir cache || true
 	docker image save -o cache/ubuntu-env.tar $(UBUNTU_IMAGE)
 	docker image save -o cache/alpine-env.tar $(ALPINE_IMAGE)
-	docker image save -o cache/busybox-env.tar $(BUSYBOX_IMAGE)
 
 load:
 	docker image load -i cache/ubuntu-env.tar
 	docker image load -i cache/alpine-env.tar
-	docker image load -i cache/busybox-env.tar
 
 ## UBUNTU #######################################################
 
@@ -81,20 +78,6 @@ alpine-3.6:
 	$(call title,alpine:3.6 - build environment)
 	docker build -t $(ALPINE_IMAGE) -f $(ENVS)/Dockerfile-alpine-3.6 .
 
-## BUSYBOX #######################################################
-
-# note: unit tests cannot be run with sh (busybox dosn't have bash by default)
-
-# note: busybox by default will not have cacerts, so you will get TLS warnings (we want to test under these conditions)
-
-acceptance-busybox-1.35: busybox-1.35
-	$(call title,busybox-1.35 - acceptance)
-	$(DOCKER_RUN) $(BUSYBOX_IMAGE) \
-		sh -c '$(WGET_INSTALL_SYFT) && $(ACCEPTANCE_CMD)'
-
-busybox-1.35:
-	$(call title,busybox-1.35 - build environment)
-	docker pull $(BUSYBOX_IMAGE)
 
 ## For CI ########################################################
 
