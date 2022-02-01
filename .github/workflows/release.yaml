@@ -30,7 +30,7 @@ jobs:
         id: static-analysis
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          # This check name is defined as the github action job name (in .github/workflows/testing.yaml)
+          # This check name is defined as the github action job name (in .github/workflows/validations.yaml)
           checkName: "Static analysis"
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
@@ -39,7 +39,7 @@ jobs:
         id: unit
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          # This check name is defined as the github action job name (in .github/workflows/testing.yaml)
+          # This check name is defined as the github action job name (in .github/workflows/validations.yaml)
           checkName: "Unit tests"
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
@@ -48,7 +48,7 @@ jobs:
         id: acceptance-linux
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          # This check name is defined as the github action job name (in .github/workflows/testing.yaml)
+          # This check name is defined as the github action job name (in .github/workflows/validations.yaml)
           checkName: "Acceptance tests (Linux)"
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
@@ -57,7 +57,7 @@ jobs:
         id: acceptance-mac
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          # This check name is defined as the github action job name (in .github/workflows/testing.yaml)
+          # This check name is defined as the github action job name (in .github/workflows/validations.yaml)
           checkName: "Acceptance tests (Mac)"
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 

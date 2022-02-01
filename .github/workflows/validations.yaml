@@ -170,7 +170,9 @@ jobs:
           path: snapshot
 
       - name: Install docker CLI
-        run: brew install docker
+        run: |
+          brew install docker
+          mkdir ~/.docker
 
       - name: Run install.sh tests (Mac)
         run: make install-test-ci-mac
