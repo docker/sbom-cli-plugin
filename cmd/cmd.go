@@ -92,7 +92,7 @@ func initEventBus() {
 
 func logAppVersion() {
 	versionInfo := version.FromBuild()
-	log.Infof("%s version: %s", internal.ApplicationName, versionInfo.Version)
+	log.Infof("%s version: %s", internal.SyftName, versionInfo.SyftVersion)
 
 	var fields map[string]interface{}
 	bytes, err := json.Marshal(versionInfo)

@@ -7,6 +7,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/anchore/docker-sbom-cli-plugin/internal/version"
+	"github.com/gookit/color"
 	"io"
 	"os"
 	"sync"
@@ -104,7 +106,14 @@ func (h *ephemeralTerminalUI) openScreen() error {
 	}
 	h.frame = fr
 
-	return nil
+	header, err := fr.AppendHeader()
+	if err != nil {
+		return err
+	}
+
+	content := color.Bold.Sprint("Syft") + " " + color.HEX("#777777").Sprint(version.FromBuild().SyftVersion)
+	_, err = header.Write([]byte(content))
+	return err
 }
 
 func (h *ephemeralTerminalUI) closeScreen(force bool) {
