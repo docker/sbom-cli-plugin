@@ -7,7 +7,7 @@ require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/adrg/xdg v0.2.1
 	github.com/anchore/stereoscope v0.0.0-20220301220648-8aa8a4a0bf50
-	github.com/anchore/syft v0.40.1-0.20220304014630-ea1a21838ff4
+	github.com/anchore/syft v0.40.1-0.20220304183604-55416f080eda
 	github.com/containerd/containerd v1.5.9 // indirect
 	github.com/containerd/continuity v0.2.2 // indirect
 	github.com/docker/cli v20.10.12+incompatible

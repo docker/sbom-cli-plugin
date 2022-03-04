@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/go-multierror"
-
 	"github.com/anchore/syft/syft"
 	"github.com/anchore/syft/syft/sbom"
+	"github.com/hashicorp/go-multierror"
 )
 
 // makeWriter creates a sbom.Writer for output or returns an error. this will either return a valid writer
@@ -30,7 +29,7 @@ func makeWriter(outputs []string, defaultFile string) (sbom.Writer, error) {
 func parseOptions(outputs []string, defaultFile string) (out []sbom.WriterOption, errs error) {
 	// always should have one option -- we generally get the default of "table", but just make sure
 	if len(outputs) == 0 {
-		outputs = append(outputs, string(syft.TableFormatOption))
+		outputs = append(outputs, string(syft.TableFormatID))
 	}
 
 	for _, name := range outputs {

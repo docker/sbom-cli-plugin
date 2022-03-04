@@ -98,7 +98,6 @@ file-metadata:
   # SYFT_FILE_METADATA_DIGESTS env var
   digests: ["sha256"]
 
-
 log:
   # use structured logging
   # same as SYFT_LOG_STRUCTURED env var
@@ -111,7 +110,6 @@ log:
   # location to write the log file (default is not to have a log file)
   # same as SYFT_LOG_FILE env var
   file: ""
-
 
 ```
 
