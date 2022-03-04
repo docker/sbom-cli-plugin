@@ -45,6 +45,15 @@ jobs:
       - name: Run static analysis
         run: make static-analysis
 
+      # allow for PRs to skip validating the syft version to allow for incremental updates of syft before release.
+      # In this way checks against the main branch (which are required for release) will fail, but PR checks will not
+      - name: Ensure syft version is a release version
+        run: |
+          echo "GitHub reference: ${GITHUB_REF##*/}"
+          git fetch origin main
+          git merge-base --is-ancestor ${GITHUB_REF##*/} origin/main && make validate-syft-release-version || echo "skipping syft version check"
+
+
   Unit-Test:
     # Note: changing this job name requires making the same update in the .github/workflows/release.yaml pipeline
     name: "Unit tests"

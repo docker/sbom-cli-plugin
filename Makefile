@@ -176,6 +176,10 @@ changelog: clean-changelog CHANGELOG.md
 CHANGELOG.md:
 	$(TEMP_DIR)/chronicle -vv > CHANGELOG.md
 
+.PHONY: validate-syft-release-version
+validate-syft-release-version:
+	@./.github/scripts/syft-released-version-check.sh
+
 .PHONY: release
 release: clean-dist CHANGELOG.md
 	$(call title,Publishing release artifacts)
