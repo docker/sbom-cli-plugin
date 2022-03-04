@@ -7,17 +7,17 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/anchore/docker-sbom-cli-plugin/internal/version"
-	"github.com/gookit/color"
 	"io"
 	"os"
 	"sync"
 
+	"github.com/gookit/color"
 	"github.com/wagoodman/go-partybus"
 	"github.com/wagoodman/jotframe/pkg/frame"
 
 	"github.com/anchore/docker-sbom-cli-plugin/internal/log"
 	"github.com/anchore/docker-sbom-cli-plugin/internal/logger"
+	"github.com/anchore/docker-sbom-cli-plugin/internal/version"
 	syftEvent "github.com/anchore/syft/syft/event"
 	"github.com/anchore/syft/ui"
 )

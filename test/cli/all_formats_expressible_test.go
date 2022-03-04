@@ -21,7 +21,7 @@ func TestAllFormatsExpressible(t *testing.T) {
 
 	imageStr := getFixtureImage(t, "image-pkg-coverage")
 
-	for _, o := range syft.FormatOptions() {
+	for _, o := range syft.FormatIDs() {
 		t.Run(fmt.Sprintf("format:%s", o), func(t *testing.T) {
 			cmd, stdout, stderr := runSyft(t, nil, "sbom", imageStr, "-o", string(o))
 			for _, traitFn := range commonAssertions {

@@ -30,8 +30,8 @@ const helpExample = `docker sbom [options] [IMAGE]
 
 Examples:
   docker sbom alpine:latest                                        a summary of discovered packages
-  docker sbom alpine:latest -o json                                show all possible cataloging details
-  docker sbom alpine:latest -o json --file sbom.json               write report output to a file
+  docker sbom alpine:latest -o syft-json                           show all possible cataloging details
+  docker sbom alpine:latest -o syft-json --file sbom.json          write report output to a file
   docker sbom alpine:latest -o table -o sbom.json=cyclonedx-json   report the SBOM in multiple formats
   docker sbom alpine:latest -v                                     show logging output
   docker sbom alpine:latest -vv                                    show verbose debug logs`
