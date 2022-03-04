@@ -81,8 +81,8 @@ func setPackageFlags(flags *pflag.FlagSet) {
 		fmt.Sprintf("selection of layers to catalog, options=%v", source.AllScopes))
 
 	flags.StringArrayP(
-		"output", "o", []string{string(syft.TableFormatID)},
-		fmt.Sprintf("report output format, options=%v", syft.FormatIDs()),
+		"output", "o", formatAliases(syft.TableFormatID),
+		fmt.Sprintf("report output format, options=%v", formatAliases(syft.FormatIDs()...)),
 	)
 
 	flags.StringP(
