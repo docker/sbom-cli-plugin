@@ -2,11 +2,17 @@ BIN = docker-sbom
 REPO = docker-sbom-cli-plugin
 
 TEMP_DIR = ./.tmp
-SNAPSHOT_DIR=./snapshot
 DIST_DIR=./dist
+SNAPSHOT_DIR=./snapshot
+RESULTS_DIR = test/results
+COVER_REPORT = $(RESULTS_DIR)/unit-coverage-details.txt
+COVER_TOTAL = $(RESULTS_DIR)/unit-coverage-summary.txt
 LINT_CMD = $(TEMP_DIR)/golangci-lint run --tests=false --timeout=2m --config .golangci.yaml
+GOIMPORTS_CMD = $(TEMP_DIR)/gosimports -local github.com/anchore
 RELEASE_CMD=$(TEMP_DIR)/goreleaser release --rm-dist
 SNAPSHOT_CMD=$(RELEASE_CMD) --skip-publish --rm-dist --snapshot
+OS=$(shell uname | tr '[:upper:]' '[:lower:]')
+SNAPSHOT_BIN=$(shell realpath $(shell pwd)/$(SNAPSHOT_DIR)/$(REPO)_$(OS)_amd64/$(BIN))
 
 BOLD := $(shell tput -T linux bold)
 PURPLE := $(shell tput -T linux setaf 5)
@@ -18,6 +24,10 @@ TITLE := $(BOLD)$(PURPLE)
 SUCCESS := $(BOLD)$(GREEN)
 
 ## Variable assertions
+
+ifndef RESULTS_DIR
+	$(error RESULTS_DIR is not set)
+endif
 
 ifndef TEMP_DIR
 	$(error TEMP_DIR is not set)
@@ -31,32 +41,44 @@ define title
     @printf '$(TITLE)$(1)$(RESET)\n'
 endef
 
+define safe_rm_rf
+	bash -c 'test -z "$(1)" && false || rm -rf $(1)'
+endef
+
+define safe_rm_rf_children
+	bash -c 'test -z "$(1)" && false || rm -rf $(1)/*'
+endef
+
 ## Tasks
 
 .PHONY: all
-all: clean static-analysis test ## Run all linux-based checks (linting, license check, unit, integration, and linux acceptance tests)
+all: clean-snapshot static-analysis $(SNAPSHOT_DIR) test ## Run all linux-based checks (linting, license check, unit, integration, and linux acceptance tests)
 	@printf '$(SUCCESS)All checks pass!$(RESET)\n'
 
 .PHONY: test
-test: unit install-test ## Run all tests
+test: unit install-test cli ## Run all tests
+
+$(RESULTS_DIR):
+	mkdir -p $(RESULTS_DIR)
 
 .PHONY: bootstrap-tools
-bootstrap-tools: $(TEMP_DIR)
-
-$(TEMP_DIR):
+bootstrap-tools:
 	$(call title,Bootstrapping tools)
 	mkdir -p $(TEMP_DIR)
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TEMP_DIR)/ v1.42.1
 	curl -sSfL https://raw.githubusercontent.com/wagoodman/go-bouncer/master/bouncer.sh | sh -s -- -b $(TEMP_DIR)/ v0.3.0
-	.github/scripts/goreleaser-install.sh -b $(TEMP_DIR)/ v1.3.1
+	curl -sSfL https://raw.githubusercontent.com/anchore/chronicle/main/install.sh | sh -s -- -b $(TEMP_DIR)/ v0.3.0
+	.github/scripts/goreleaser-install.sh -b $(TEMP_DIR)/ v1.5.0
+	# the only difference between goimports and gosimports is that gosimports removes extra whitespace between import blocks (see https://github.com/golang/go/issues/20818)
+	GOBIN="$(shell realpath $(TEMP_DIR))" go install github.com/rinchsan/gosimports/cmd/gosimports@v0.1.5
 
 .PHONY: bootstrap-go
 bootstrap-go:
 	go mod download
 
 .PHONY: bootstrap
-bootstrap: bootstrap-go bootstrap-tools ## Download and install all go dependencies (+ prep tooling in the ./tmp dir)
-	$(call title,Bootstrapping dependencies)
+bootstrap: $(RESULTS_DIR) bootstrap-go bootstrap-tools ## Download and install all go dependencies (+ prep tooling in the ./tmp dir)
+	$(call title,Bootstrapping go dependencies)
 
 .PHONY: static-analysis
 static-analysis: lint check-go-mod-tidy check-licenses
@@ -70,6 +92,7 @@ lint: ## Run gofmt + golangci lint checks
 
 	# run all golangci-lint rules
 	$(LINT_CMD)
+	@[ -z "$(shell $(GOIMPORTS_CMD) -d .)" ] && echo "goimports clean" || (echo "goimports needs to be fixed" && false)
 
 	# go tooling does not play well with certain filename characters, ensure the common cases don't result in future "go get" failures
 	$(eval MALFORMED_FILENAMES := $(shell find . | grep -e ':'))
@@ -79,6 +102,7 @@ lint: ## Run gofmt + golangci lint checks
 lint-fix: ## Auto-format all source code + run golangci lint fixers
 	$(call title,Running lint fixers)
 	gofmt -w -s .
+	$(GOIMPORTS_CMD) -w .
 	$(LINT_CMD) --fix
 	go mod tidy
 
@@ -92,7 +116,9 @@ check-go-mod-tidy:
 .PHONY: unit
 unit:  ## Run unit tests
 	$(call title,Running unit tests)
-	go test $(shell go list ./... | grep -v anchore/$(REPO)/test)
+	go test  -coverprofile $(COVER_REPORT) $(shell go list ./... | grep -v anchore/docker-sbom-cli-plugin/test)
+	@go tool cover -func $(COVER_REPORT) | grep total |  awk '{print substr($$3, 1, length($$3)-1)}' > $(COVER_TOTAL)
+	@echo "Coverage: $$(cat $(COVER_TOTAL))"
 
 # note: this is used by CI to determine if the install test fixture cache (docker image tars) should be busted
 install-fingerprint:
@@ -115,6 +141,17 @@ install-test-ci-mac:
 	cd test/install && \
 		make ci-test-mac
 
+# note: this is used by CI to determine if the integration test fixture cache (docker image tars) should be busted
+cli-fingerprint:
+	$(call title,CLI test fixture fingerprint)
+	find test/cli/test-fixtures/image-* -type f -exec md5sum {} + | awk '{print $1}' | sort | md5sum | tee test/cli/test-fixtures/cache.fingerprint && echo "$(CLI_CACHE_BUSTER)" >> test/cli/test-fixtures/cache.fingerprint
+
+.PHONY: cli
+cli: $(SNAPSHOT_DIR) ## Run CLI tests
+	chmod 755 "$(SNAPSHOT_BIN)"
+	SYFT_BINARY_LOCATION='$(SNAPSHOT_BIN)' \
+		go test -count=1 -v ./test/cli
+
 $(SNAPSHOT_DIR): $(TEMP_DIR) ## Build snapshot release binaries and packages
 	$(call title,Building snapshot artifacts)
 	# create a config with the dist dir overridden
@@ -123,25 +160,45 @@ $(SNAPSHOT_DIR): $(TEMP_DIR) ## Build snapshot release binaries and packages
 
 	$(SNAPSHOT_CMD) --config $(TEMP_DIR)/goreleaser.yaml
 
+
+.PHONY: install-snapshot
+install-snapshot:
+	cp $(SNAPSHOT_BIN) ~/.docker/cli-plugins/
+
+.PHONY: changelog
+changelog: clean-changelog CHANGELOG.md
+	@docker run -it --rm \
+		-v $(shell pwd)/CHANGELOG.md:/CHANGELOG.md \
+		rawkode/mdv \
+			-t 748.5989 \
+			/CHANGELOG.md
+
+CHANGELOG.md:
+	$(TEMP_DIR)/chronicle -vv > CHANGELOG.md
+
 .PHONY: release
-release: clean-dist ## Build and publish final binaries and packages
+release: clean-dist CHANGELOG.md
 	$(call title,Publishing release artifacts)
-	$(RELEASE_CMD)
+	$(RELEASE_CMD) --release-notes <(cat CHANGELOG.md)
 
 .PHONY: clean
-clean: clean-dist clean-snapshot clean-changelog ## Remove previous builds, result reports, and caches
+clean: clean-dist clean-snapshot  ## Remove previous builds, result reports, and test cache
+	$(call safe_rm_rf_children,$(RESULTS_DIR))
 
 .PHONY: clean-snapshot
 clean-snapshot:
-	rm -rf $(SNAPSHOT_DIR) $(TEMP_DIR)/goreleaser.yaml
+	$(call safe_rm_rf,$(SNAPSHOT_DIR))
+	rm -f $(TEMP_DIR)/goreleaser.yaml
 
 .PHONY: clean-dist
 clean-dist: clean-changelog
-	rm -rf $(DIST_DIR) $(TEMP_DIR)/goreleaser.yaml
+	$(call safe_rm_rf,$(DIST_DIR))
+	rm -f $(TEMP_DIR)/goreleaser.yaml
 
 .PHONY: clean-changelog
 clean-changelog:
 	rm -f CHANGELOG.md
+
 
 .PHONY: clean-tmp
 clean-tmp:

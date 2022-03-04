@@ -1,19 +1,18 @@
-NAME=docker-sbom-cli-plugin
+NAME=syft
 
 IMAGE_NAME=$(NAME)-install.sh-env
 UBUNTU_IMAGE=$(IMAGE_NAME):ubuntu-20.04
 ALPINE_IMAGE=$(IMAGE_NAME):alpine-3.6
+BUSYBOX_IMAGE=busybox:1.35
 
 ENVS=./environments
-DOCKER_RUN=docker run --rm -t -w /project/test/install -v /var/run/docker.sock:/var/run/docker.sock -v $(shell pwd)/../../:/project
+DOCKER_RUN=docker run --rm -t -w /project/test/install -v $(shell pwd)/../../:/project
 UNIT=make unit-local
 
 # acceptance testing is running the current install.sh against the latest release. Note: this could be a problem down
 # the line if there are breaking changes made that don't align with the latest release (but will be OK with the next
 # release)
-CURL_INSTALL_SYFT=curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-WGET_INSTALL_SYFT=wget -O - https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-ACCEPTANCE_CMD=../../install.sh && docker sbom version
+ACCEPTANCE_CMD=sh -c '../../install.sh -b /usr/local/bin  && docker sbom version'
 
 # CI cache busting values; change these if you want CI to not use previous stored cache
 INSTALL_TEST_CACHE_BUSTER=894d8ca
@@ -26,41 +25,59 @@ endef
 test: unit acceptance
 
 .PHONY: ci-test-mac
-ci-test-mac: acceptance-local
+ci-test-mac: unit-local acceptance-local
 
 # note: do not add acceptance-local to this list
-acceptance: acceptance-ubuntu-20.04 acceptance-alpine-3.6
+.PHONY: acceptance
+# TODO: add acceptance tests back after first release
+#acceptance: acceptance-ubuntu-20.04 acceptance-alpine-3.6 acceptance-busybox-1.35
+acceptance:
+	@echo "[acceptance tests disabled]"
 
+.PHONY: unit
 unit: unit-ubuntu-20.04
 
+.PHONY: unit-local
 unit-local:
 	$(call title,unit tests)
 	@for f in $(shell ls *_test.sh); do echo "Running unit test suite '$${f}'"; bash $${f} || exit 1; done
 
-acceptance-local:
-	$(CURL_INSTALL_SYFT) && $(ACCEPTANCE_CMD)
+.PHONY: acceptance-local
+acceptance-local: acceptance-current-release-local
 
-save: ubuntu-20.04 alpine-3.6
+.PHONY: acceptance-current-release-local
+acceptance-current-release-local:
+	$(ACCEPTANCE_CMD)
+
+
+.PHONY: save
+save: ubuntu-20.04 alpine-3.6 busybox-1.35
 	@mkdir cache || true
 	docker image save -o cache/ubuntu-env.tar $(UBUNTU_IMAGE)
 	docker image save -o cache/alpine-env.tar $(ALPINE_IMAGE)
+	docker image save -o cache/busybox-env.tar $(BUSYBOX_IMAGE)
 
+.PHONY: load
 load:
 	docker image load -i cache/ubuntu-env.tar
 	docker image load -i cache/alpine-env.tar
+	docker image load -i cache/busybox-env.tar
 
 ## UBUNTU #######################################################
 
+.PHONY: acceptance-ubuntu-20.04
 acceptance-ubuntu-20.04: ubuntu-20.04
 	$(call title,ubuntu:20.04 - acceptance)
 	$(DOCKER_RUN) $(UBUNTU_IMAGE) \
-		sh -c '$(CURL_INSTALL_SYFT) && $(ACCEPTANCE_CMD)'
+		$(ACCEPTANCE_CMD)
 
+.PHONY: unit-ubuntu-20.04
 unit-ubuntu-20.04: ubuntu-20.04
 	$(call title,ubuntu:20.04 - unit)
 	$(DOCKER_RUN) $(UBUNTU_IMAGE) \
 		$(UNIT)
 
+.PHONY: ubuntu-20.04
 ubuntu-20.04:
 	$(call title,ubuntu:20.04 - build environment)
 	docker build -t $(UBUNTU_IMAGE) -f $(ENVS)/Dockerfile-ubuntu-20.04 .
@@ -69,15 +86,34 @@ ubuntu-20.04:
 
 # note: unit tests cannot be run with sh (alpine dosn't have bash by default)
 
+.PHONY: acceptance-alpine-3.6
 acceptance-alpine-3.6: alpine-3.6
 	$(call title,alpine:3.6 - acceptance)
 	$(DOCKER_RUN) $(ALPINE_IMAGE) \
-		sh -c '$(WGET_INSTALL_SYFT) && $(ACCEPTANCE_CMD)'
+		$(ACCEPTANCE_CMD)
 
+.PHONY: alpine-3.6
 alpine-3.6:
 	$(call title,alpine:3.6 - build environment)
 	docker build -t $(ALPINE_IMAGE) -f $(ENVS)/Dockerfile-alpine-3.6 .
 
+## BUSYBOX #######################################################
+
+# note: unit tests cannot be run with sh (busybox dosn't have bash by default)
+
+# note: busybox by default will not have cacerts, so you will get TLS warnings (we want to test under these conditions)
+
+.PHONY: acceptance-busybox-1.35
+acceptance-busybox-1.35: busybox-1.35
+	$(call title,busybox-1.35 - acceptance)
+	$(DOCKER_RUN) $(BUSYBOX_IMAGE) \
+		$(ACCEPTANCE_CMD)
+	@echo "\n*** test note: you should see syft spit out a 'x509: certificate signed by unknown authority' error --this is expected ***"
+
+.PHONY: busybox-1.35
+busybox-1.35:
+	$(call title,busybox-1.35 - build environment)
+	docker pull $(BUSYBOX_IMAGE)
 
 ## For CI ########################################################
 

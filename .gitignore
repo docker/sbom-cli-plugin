@@ -18,6 +18,8 @@ CHANGELOG.md
 .images
 .tmp/
 coverage.txt
+bin/
+**/test-fixtures/cache/*
 
 # Binaries for programs and plugins
 *.exe
