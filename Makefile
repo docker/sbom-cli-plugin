@@ -186,7 +186,7 @@ validate-syft-release-version:
 .PHONY: release
 release: clean-dist CHANGELOG.md
 	$(call title,Publishing release artifacts)
-	$(RELEASE_CMD) --release-notes <(cat CHANGELOG.md)
+	bash -c "$(RELEASE_CMD) --release-notes <(cat CHANGELOG.md)"
 
 .PHONY: clean
 clean: clean-dist clean-snapshot  ## Remove previous builds, result reports, and test cache
