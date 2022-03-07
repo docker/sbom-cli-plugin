@@ -7,11 +7,6 @@ CHANGELOG.md
 .history/
 *.fingerprint
 *.tar
-*.jar
-*.war
-*.ear
-*.jpi
-*.hpi
 *.zip
 .idea/
 *.log

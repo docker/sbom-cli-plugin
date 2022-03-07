@@ -14,19 +14,6 @@ curl -sSfL https://raw.githubusercontent.com/anchore/docker-sbom-cli-plugin/main
 docker sbom <my-image>
 ```
 
-## Developing
-
-```
-# get development tooling
-make bootstrap
-
-# make a snapshot build and install into the ~/.docker/cli-plugins directory
-make snapshot install-snapshot
-
-# use the sbom plugin
-docker sbom <my-image>
-```
-
 ## Configuration
 
 Configuration search paths:
@@ -59,6 +46,10 @@ file: ""
 #   - "/etc/**"
 #   - "./out/**/*.json"
 exclude: []
+
+# override the OS or architecture options (e.g. "windows/arm/v7", "linux/arm64", "arm64") similar to "docker --platform"
+# same as --platform; SYFT_PLATFORM env var
+platform: ""
 
 # cataloging packages is exposed through the packages and power-user subcommands
 package:
