@@ -110,6 +110,14 @@ func TestSBOMCmdFlags(t *testing.T) {
 				assertInOutput("search-indexed-archives: false"),
 			},
 		},
+		{
+			name: "platform-option-wired-up",
+			args: []string{"sbom", "--platform", "arm64", "-o", "json", "busybox:1.31"},
+			assertions: []traitAssertion{
+				assertInOutput("sha256:dcd4bbdd7ea2360002c684968429a2105997c3ce5821e84bfc2703c5ec984971"), // linux/arm64 image digest
+				assertSuccessfulReturnCode,
+			},
+		},
 	}
 
 	for _, tt := range tests {

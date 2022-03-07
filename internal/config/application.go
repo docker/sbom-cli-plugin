@@ -37,6 +37,7 @@ type Application struct {
 	Package      pkg            `yaml:"package" json:"package" mapstructure:"package"`
 	FileMetadata FileMetadata   `yaml:"file-metadata" json:"file-metadata" mapstructure:"file-metadata"`
 	Exclusions   []string       `yaml:"exclude" json:"exclude" mapstructure:"exclude"`
+	Platform     string         `yaml:"platform" json:"platform" mapstructure:"platform"`
 }
 
 func newApplicationConfig(v *viper.Viper, cliOpts CliOnlyOptions) *Application {

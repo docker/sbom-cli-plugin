@@ -94,6 +94,11 @@ func setPackageFlags(flags *pflag.FlagSet) {
 		"exclude", "", nil,
 		"exclude paths from being scanned using a glob expression",
 	)
+
+	flags.StringP(
+		"platform", "", "",
+		"an optional platform specifier for container image sources (e.g. 'linux/arm64', 'linux/arm64/v8', 'arm64', 'linux')",
+	)
 }
 
 func bindConfigOptions(flags *pflag.FlagSet) error {
@@ -118,6 +123,10 @@ func bindConfigOptions(flags *pflag.FlagSet) error {
 	}
 
 	if err := viper.BindPFlag("exclude", flags.Lookup("exclude")); err != nil {
+		return err
+	}
+
+	if err := viper.BindPFlag("platform", flags.Lookup("platform")); err != nil {
 		return err
 	}
 
@@ -152,6 +161,7 @@ func run(_ *cobra.Command, args []string) error {
 		Scheme:      source.ImageScheme,
 		ImageSource: image.DockerDaemonSource,
 		Location:    args[0],
+		Platform:    appConfig.Platform,
 	}
 
 	return eventLoop(
