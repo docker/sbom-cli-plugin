@@ -23,6 +23,9 @@ RESET := $(shell tput -T linux sgr0)
 TITLE := $(BOLD)$(PURPLE)
 SUCCESS := $(BOLD)$(GREEN)
 
+## change these values manually if you'd like to bust the cache in CI for select test fixtures
+CLI_CACHE_BUSTER = e11f51e6c910590b485b
+
 ## Variable assertions
 
 ifndef RESULTS_DIR
