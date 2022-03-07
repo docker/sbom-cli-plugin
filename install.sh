@@ -5,10 +5,15 @@ set -u
 PROJECT_NAME="docker-sbom-cli-plugin"
 OWNER=anchore
 REPO="${PROJECT_NAME}"
-BINARY="docker-sbom"
-DOCKER_HOME=~/.docker
-DEFAULT_INSTALL_DIR=${DOCKER_HOME}/cli-plugins
 GITHUB_DOWNLOAD_PREFIX=https://github.com/${OWNER}/${REPO}/releases/download
+INSTALL_SH_BASE_URL=https://raw.githubusercontent.com/${OWNER}/${PROJECT_NAME}
+BINARY="docker-sbom"
+DOCKER_HOME=${DOCKER_HOME:-~/.docker}
+DEFAULT_INSTALL_DIR=${DOCKER_HOME}/cli-plugins
+PROGRAM_ARGS=$@
+
+# do not change the name of this parameter (this must always be backwards compatible)
+DOWNLOAD_TAG_INSTALL_SCRIPT=${DOWNLOAD_TAG_INSTALL_SCRIPT:-true}
 
 #
 # usage [script-name]
@@ -550,30 +555,6 @@ download_and_install_asset() (
 #
 download_asset() (
   download_url="$1"
-  download_path="$2"
-  name="$3"
-  os="$4"
-  arch="$5"
-  version="$6"
-  format="$7"
-
-  if [ "$format" = "dmg" ] ||  [ "$os/$arch/$format" = "darwin/arm64/zip" ]; then
-    # the signing process outputs the zip/dmg and the checksum is not included in the checksums.txt file
-    # TODO: remove this case in the future by upgrading the release process
-    asset_filepath=$(download_asset_without_verification "${download_url}" "${download_path}" "${name}" "${os}" "${arch}" "${version}" "${format}")
-  else
-    asset_filepath=$(download_asset_by_checksums_file "${download_url}" "${download_path}" "${name}" "${os}" "${arch}" "${version}" "${format}")
-  fi
-
-  echo "${asset_filepath}"
-)
-
-# download_asset_without_verification [release-url-prefix] [destination] [name] [os] [arch] [version] [format]
-#
-# outputs the filepath to the raw asset (no verification against the checksums file is performed)
-#
-download_asset_without_verification() (
-  download_url="$1"
   destination="$2"
   name="$3"
   os="$4"
@@ -581,28 +562,7 @@ download_asset_without_verification() (
   version="$6"
   format="$7"
 
-  asset_filename="${name}_${version}_${os}_${arch}.${format}"
-  asset_url="${download_url}/${asset_filename}"
-  asset_filepath="${destination}/${asset_filename}"
-  http_download "${asset_filepath}" "${asset_url}" ""
-
-  echo "${asset_filepath}"
-)
-
-# download_asset_by_checksums_file [release-url-prefix] [destination] [name] [os] [arch] [version] [format]
-#
-# outputs the filepath to the raw asset (verified against the checksums file)
-#
-download_asset_by_checksums_file() (
-  download_url="$1"
-  destination="$2"
-  name="$3"
-  os="$4"
-  arch="$5"
-  version="$6"
-  format="$7"
-
-  log_trace "download_asset_by_checksums_file(url=${download_url}, destination=${destination}, name=${name}, os=${os}, arch=${arch}, version=${version}, format=${format})"
+  log_trace "download_asset(url=${download_url}, destination=${destination}, name=${name}, os=${os}, arch=${arch}, version=${version}, format=${format})"
 
   checksums_filepath=$(download_github_release_checksums "${download_url}" "${name}" "${version}" "${destination}")
 
@@ -655,7 +615,10 @@ install_asset() (
 main() (
   # parse arguments
 
+  # note: never change default install directory (this must always be backwards compatible)
   install_dir=${install_dir:-${DEFAULT_INSTALL_DIR}}
+
+  # note: never change the program flags or arguments (this must always be backwards compatible)
   while getopts "b:dh?x" arg; do
     case "$arg" in
       b) install_dir="$OPTARG" ;;
@@ -684,10 +647,10 @@ main() (
   fi
 
   if [ -z "${tag}" ]; then
-    log_info "checking github for the current release tag"
+    log_debug "checking github for the current release tag"
     tag=""
   else
-    log_info "checking github for release tag='${tag}'"
+    log_debug "checking github for release tag='${tag}'"
   fi
   set -u
 
@@ -699,20 +662,30 @@ main() (
       return 1
   fi
 
-  version=$(tag_to_version "${tag}")
-
-  download_dir=$(mktemp -d)
-  trap 'rm -rf -- "$download_dir"' EXIT
-
   # run the application
 
+  version=$(tag_to_version "${tag}")
   os=$(uname_os)
   arch=$(uname_arch)
   format=$(get_format_name "${os}" "${arch}" "tar.gz")
   binary=$(get_binary_name "${os}" "${arch}" "${BINARY}")
   download_url="${GITHUB_DOWNLOAD_PREFIX}/${tag}"
 
+  # we always use the install.sh script that is associated with the tagged release. Why? the latest install.sh is not
+  # guaranteed to be able to install every version of the application. We use the DOWNLOAD_TAG_INSTALL_SCRIPT env var
+  # to indicate if we should continue processing with the existing script or to download the script from the given tag.
+  if [ "${DOWNLOAD_TAG_INSTALL_SCRIPT}" = "true" ]; then
+      export DOWNLOAD_TAG_INSTALL_SCRIPT=false
+      log_info "fetching release script for tag='${tag}'"
+      http_copy "${INSTALL_SH_BASE_URL}/${tag}/install.sh" "" | sh -s -- ${PROGRAM_ARGS}
+      exit $?
+  fi
+
   log_info "using release tag='${tag}' version='${version}' os='${os}' arch='${arch}'"
+
+  download_dir=$(mktemp -d)
+  trap 'rm -rf -- "$download_dir"' EXIT
+
   log_debug "downloading files into ${download_dir}"
 
   download_and_install_asset "${download_url}" "${download_dir}" "${install_dir}" "${PROJECT_NAME}" "${os}" "${arch}" "${version}" "${format}" "${binary}"

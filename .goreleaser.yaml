@@ -19,10 +19,10 @@ builds:
       -w
       -s
       -extldflags '-static'
-      -X github.com/anchore/docker-sbom-cli-plugin/internal.version={{.Version}}
-      -X github.com/anchore/docker-sbom-cli-plugin/internal.gitCommit={{.Commit}}
-      -X github.com/anchore/docker-sbom-cli-plugin/internal.buildDate={{.Date}}
-      -X github.com/anchore/docker-sbom-cli-plugin/internal.gitDescription={{.Summary}}
+      -X github.com/anchore/docker-sbom-cli-plugin/internal/version.version={{.Version}}
+      -X github.com/anchore/docker-sbom-cli-plugin/internal/version.gitCommit={{.Commit}}
+      -X github.com/anchore/docker-sbom-cli-plugin/internal/version.buildDate={{.Date}}
+      -X github.com/anchore/docker-sbom-cli-plugin/internal/version.gitDescription={{.Summary}}
 
 archives:
   - format: tar.gz

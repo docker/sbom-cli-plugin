@@ -1,0 +1,5 @@
+**/test-fixtures/**/*.jpi filter=lfs diff=lfs merge=lfs -text
+**/test-fixtures/**/*.hpi filter=lfs diff=lfs merge=lfs -text
+**/test-fixtures/**/*.jar filter=lfs diff=lfs merge=lfs -text
+**/test-fixtures/**/*.war filter=lfs diff=lfs merge=lfs -text
+**/test-fixtures/**/*.ear filter=lfs diff=lfs merge=lfs -text

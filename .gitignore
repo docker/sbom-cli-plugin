@@ -7,17 +7,14 @@ CHANGELOG.md
 .history/
 *.fingerprint
 *.tar
-*.jar
-*.war
-*.ear
-*.jpi
-*.hpi
 *.zip
 .idea/
 *.log
 .images
 .tmp/
 coverage.txt
+bin/
+**/test-fixtures/cache/*
 
 # Binaries for programs and plugins
 *.exe

@@ -37,4 +37,3 @@ run_test_case test_download_release_asset "${release}" "linux" "amd64" "tar.gz" 
 run_test_case test_download_release_asset "${release}" "linux" "arm64" "tar.gz" "application/gzip"
 run_test_case test_download_release_asset "${release}" "windows" "amd64" "zip" "application/zip"
 run_test_case test_download_release_asset "${release}" "windows" "arm64" "zip" "application/zip"
-

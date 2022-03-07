@@ -61,13 +61,23 @@ jobs:
           checkName: "Acceptance tests (Mac)"
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
+      - name: Check cli test results (linux)
+        uses: fountainhead/action-wait-for-check@v1.0.0
+        id: cli-linux
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # This check name is defined as the github action job name (in .github/workflows/testing.yaml)
+          checkName: "CLI tests (Linux)"
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
       - name: Quality gate
-        if: steps.static-analysis.outputs.conclusion != 'success' || steps.unit.outputs.conclusion != 'success' || steps.acceptance-linux.outputs.conclusion != 'success' || steps.acceptance-mac.outputs.conclusion != 'success'
+        if: steps.static-analysis.outputs.conclusion != 'success' || steps.unit.outputs.conclusion != 'success' || steps.acceptance-linux.outputs.conclusion != 'success' || steps.acceptance-mac.outputs.conclusion != 'success'  || steps.cli-linux.outputs.conclusion != 'success'
         run: |
           echo "Static Analysis Status: ${{ steps.static-analysis.conclusion }}"
           echo "Unit Test Status: ${{ steps.unit.outputs.conclusion }}"
           echo "Acceptance Test (Linux) Status: ${{ steps.acceptance-linux.outputs.conclusion }}"
           echo "Acceptance Test (Mac) Status: ${{ steps.acceptance-mac.outputs.conclusion }}"
+          echo "CLI Test (Linux) Status: ${{ steps.cli-linux.outputs.conclusion }}"
           false
 
   release:
@@ -109,18 +119,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: anchore/sbom-action@v0
+        continue-on-error: true
         with:
           artifact-name: sbom.spdx.json
-
-# TODO
-#      - uses: 8398a7/action-slack@v3
-#        with:
-#          status: ${{ job.status }}
-#          fields: repo,workflow,action,eventName
-#          text: "A new docker-sbom-cli-plugin release is ready to be manually published: https://github.com/anchore/docker-sbom-cli-plugin/releases"
-#        env:
-#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_TOOLBOX_WEBHOOK_URL }}
-#        if: ${{ success() }}
 
       - uses: actions/upload-artifact@v2
         with:
