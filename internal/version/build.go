@@ -14,7 +14,7 @@ import (
 const valueNotProvided = "[not provided]"
 
 // all variables here are provided as build-time arguments, with clear default values
-const (
+var (
 	version        = valueNotProvided
 	gitCommit      = valueNotProvided
 	gitDescription = valueNotProvided
