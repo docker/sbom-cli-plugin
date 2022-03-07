@@ -6,9 +6,9 @@ require (
 	github.com/Microsoft/hcsshim v0.9.2 // indirect
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/adrg/xdg v0.2.1
-	github.com/anchore/stereoscope v0.0.0-20220301220648-8aa8a4a0bf50
-	github.com/anchore/syft v0.40.1-0.20220304183604-55416f080eda
-	github.com/containerd/containerd v1.5.9 // indirect
+	github.com/anchore/stereoscope v0.0.0-20220307154759-8a5a70c227d3
+	github.com/anchore/syft v0.41.0
+	github.com/containerd/containerd v1.5.10 // indirect
 	github.com/containerd/continuity v0.2.2 // indirect
 	github.com/docker/cli v20.10.12+incompatible
 	github.com/docker/docker v20.10.12+incompatible
@@ -48,7 +48,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.10.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/docker/distribution v2.7.1+incompatible // indirect
+	github.com/docker/distribution v2.8.0+incompatible // indirect
 	github.com/docker/go v1.5.1-1.0.20160303222718-d30aec9fd63c // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-metrics v0.0.1 // indirect
