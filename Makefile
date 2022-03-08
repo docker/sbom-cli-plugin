@@ -117,7 +117,7 @@ check-go-mod-tidy:
 	@ .github/scripts/go-mod-tidy-check.sh && echo "go.mod and go.sum are tidy!"
 
 .PHONY: unit
-unit:  ## Run unit tests
+unit: $(RESULTS_DIR)  ## Run unit tests
 	$(call title,Running unit tests)
 	go test  -coverprofile $(COVER_REPORT) $(shell go list ./... | grep -v anchore/docker-sbom-cli-plugin/test)
 	@go tool cover -func $(COVER_REPORT) | grep total |  awk '{print substr($$3, 1, length($$3)-1)}' > $(COVER_TOTAL)
