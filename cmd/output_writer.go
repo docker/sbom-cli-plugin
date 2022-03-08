@@ -56,10 +56,7 @@ func parseOptions(outputs []string, defaultFile string) (out []sbom.WriterOption
 			continue
 		}
 
-		out = append(out, sbom.WriterOption{
-			Format: format,
-			Path:   file,
-		})
+		out = append(out, sbom.NewWriterOption(format, file))
 	}
 	return out, errs
 }
