@@ -51,7 +51,7 @@ exclude: []
 # same as --platform; SYFT_PLATFORM env var
 platform: ""
 
-# cataloging packages is exposed through the packages and power-user subcommands
+# catalog packages
 package:
 
   # search within archives that do contain a file index to search against (zip)
@@ -74,7 +74,7 @@ package:
     # same as -s ; SYFT_PACKAGE_CATALOGER_SCOPE env var
     scope: "squashed"
 
-# cataloging file metadata is exposed through the power-user subcommand
+# catalog file metadata
 file-metadata:
   cataloger:
     # enable/disable cataloging of file metadata
