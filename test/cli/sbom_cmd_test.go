@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"fmt"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -116,6 +118,26 @@ func TestSBOMCmdFlags(t *testing.T) {
 			assertions: []traitAssertion{
 				assertInOutput("sha256:dcd4bbdd7ea2360002c684968429a2105997c3ce5821e84bfc2703c5ec984971"), // linux/arm64 image digest
 				assertSuccessfulReturnCode,
+			},
+		},
+		{
+			name: "json-file-flag",
+			args: []string{"sbom", "-o", "json", "--file", filepath.Join(tmp, "output-1.json"), coverageImage},
+			assertions: []traitAssertion{
+				assertSuccessfulReturnCode,
+				assertFileOutput(t, filepath.Join(tmp, "output-1.json"),
+					assertJsonReport,
+				),
+			},
+		},
+		{
+			name: "json-output-flag-to-file",
+			args: []string{"sbom", "-o", fmt.Sprintf("json=%s", filepath.Join(tmp, "output-2.json")), coverageImage},
+			assertions: []traitAssertion{
+				assertSuccessfulReturnCode,
+				assertFileOutput(t, filepath.Join(tmp, "output-2.json"),
+					assertJsonReport,
+				),
 			},
 		},
 	}
