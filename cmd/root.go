@@ -19,7 +19,6 @@ import (
 	"github.com/anchore/stereoscope"
 	"github.com/anchore/stereoscope/pkg/image"
 	"github.com/anchore/syft/syft"
-	"github.com/anchore/syft/syft/artifact"
 	"github.com/anchore/syft/syft/event"
 	"github.com/anchore/syft/syft/pkg/cataloger"
 	"github.com/anchore/syft/syft/sbom"
@@ -33,6 +32,7 @@ Examples:
   docker sbom alpine:latest -o syft-json                           show all possible cataloging details
   docker sbom alpine:latest -o syft-json --file sbom.json          write report output to a file
   docker sbom alpine:latest -o table -o sbom.json=cyclonedx-json   report the SBOM in multiple formats
+  docker sbom alpine:latest --exclude /lib  --exclude '**/*.db'    ignore one or more paths in the image
   docker sbom alpine:latest -v                                     show logging output
   docker sbom alpine:latest -vv                                    show verbose debug logs`
 
@@ -78,7 +78,7 @@ func setPackageFlags(flags *pflag.FlagSet) {
 	// Formatting & Input options //////////////////////////////////////////////
 	flags.StringP(
 		"scope", "s", cataloger.DefaultSearchConfig().Scope.String(),
-		fmt.Sprintf("selection of layers to catalog, options=%v", source.AllScopes))
+		fmt.Sprintf("[experimental] selection of layers to catalog, options=%v", source.AllScopes))
 
 	flags.StringArrayP(
 		"output", "o", formatAliases(syft.TableFormatID),
@@ -184,35 +184,26 @@ func isVerbose() (result bool) {
 	return appConfig.CliOptions.Verbosity > 0 || isPipedInput
 }
 
-func generateSBOM(src *source.Source, errs chan error) (*sbom.SBOM, error) {
-	tasks, err := catalogingTasks()
-	if err != nil {
-		return nil, err
-	}
-
+func generateSBOM(src *source.Source) (*sbom.SBOM, error) {
 	s := sbom.SBOM{
 		Source: src.Metadata,
 		Descriptor: sbom.Descriptor{
 			Name:          internal.SyftName,
-			Version:       version.FromBuild().Version,
+			Version:       version.FromBuild().SyftVersion,
 			Configuration: appConfig,
 		},
 	}
 
-	buildRelationships(&s, src, tasks, errs)
-
-	return &s, nil
-}
-
-func buildRelationships(s *sbom.SBOM, src *source.Source, tasks []task, errs chan error) {
-	var relationships []<-chan artifact.Relationship
-	for _, task := range tasks {
-		c := make(chan artifact.Relationship)
-		relationships = append(relationships, c)
-		go runTask(task, &s.Artifacts, src, c, errs)
+	packageCatalog, relationships, theDistro, err := syft.CatalogPackages(src, appConfig.Package.ToConfig())
+	if err != nil {
+		return nil, fmt.Errorf("unable to catalog packages: %w", err)
 	}
 
-	s.Relationships = append(s.Relationships, mergeRelationships(relationships...)...)
+	s.Artifacts.PackageCatalog = packageCatalog
+	s.Artifacts.LinuxDistribution = theDistro
+	s.Relationships = relationships
+
+	return &s, nil
 }
 
 func sbomExecWorker(si source.Input, writer sbom.Writer) <-chan error {
@@ -229,7 +220,7 @@ func sbomExecWorker(si source.Input, writer sbom.Writer) <-chan error {
 			return
 		}
 
-		s, err := generateSBOM(src, errs)
+		s, err := generateSBOM(src)
 		if err != nil {
 			errs <- err
 			return
@@ -246,14 +237,4 @@ func sbomExecWorker(si source.Input, writer sbom.Writer) <-chan error {
 		})
 	}()
 	return errs
-}
-
-func mergeRelationships(cs ...<-chan artifact.Relationship) (relationships []artifact.Relationship) {
-	for _, c := range cs {
-		for n := range c {
-			relationships = append(relationships, n)
-		}
-	}
-
-	return relationships
 }
