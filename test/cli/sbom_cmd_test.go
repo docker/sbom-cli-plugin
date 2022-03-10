@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/anchore/docker-sbom-cli-plugin/internal"
 )
 
 func TestSBOMCmdFlags(t *testing.T) {
@@ -31,6 +33,8 @@ func TestSBOMCmdFlags(t *testing.T) {
 			args: []string{"sbom", "-o", "json", coverageImage},
 			assertions: []traitAssertion{
 				assertJsonReport,
+				assertJsonDescriptor(internal.SyftName, "v0.41.1"),
+				assertNotInOutput("not provided"),
 				assertSuccessfulReturnCode,
 			},
 		},
@@ -40,17 +44,6 @@ func TestSBOMCmdFlags(t *testing.T) {
 			assertions: []traitAssertion{
 				assertTableReport,
 				assertFileExists(tmp + ".tmp/multiple-output-flag-test.json"),
-				assertSuccessfulReturnCode,
-			},
-		},
-		{
-			name: "output-env-binding",
-			env: map[string]string{
-				"SYFT_OUTPUT": "json",
-			},
-			args: []string{"sbom", coverageImage},
-			assertions: []traitAssertion{
-				assertJsonReport,
 				assertSuccessfulReturnCode,
 			},
 		},
@@ -84,32 +77,6 @@ func TestSBOMCmdFlags(t *testing.T) {
 			assertions: []traitAssertion{
 				assertPackageCount(22),
 				assertSuccessfulReturnCode,
-			},
-		},
-		{
-			name: "all-layers-scope-flag-by-env",
-			args: []string{"sbom", "-o", "json", coverageImage},
-			env: map[string]string{
-				"SYFT_PACKAGE_CATALOGER_SCOPE": "all-layers",
-			},
-			assertions: []traitAssertion{
-				assertPackageCount(22),
-				assertSuccessfulReturnCode,
-			},
-		},
-		{
-			name: "responds-to-package-cataloger-search-options",
-			args: []string{"sbom", "-vv"},
-			env: map[string]string{
-				"SYFT_PACKAGE_SEARCH_UNINDEXED_ARCHIVES": "true",
-				"SYFT_PACKAGE_SEARCH_INDEXED_ARCHIVES":   "false",
-			},
-			assertions: []traitAssertion{
-				// the application config in the log matches that of what we expect to have been configured. Note:
-				// we are not testing further wiring of this option, only that the config responds to
-				// package-cataloger-level options.
-				assertInOutput("search-unindexed-archives: true"),
-				assertInOutput("search-indexed-archives: false"),
 			},
 		},
 		{

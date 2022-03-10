@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/acarl005/stripansi"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -117,6 +118,26 @@ func assertPackageCount(length uint) traitAssertion {
 			tb.Errorf("expected package count of %d, but found %d", length, len(data.Artifacts))
 
 		}
+	}
+}
+
+func assertJsonDescriptor(name, version string) traitAssertion {
+	return func(tb testing.TB, stdout, _ string, _ int) {
+		tb.Helper()
+		type partial struct {
+			Descriptor struct {
+				Name    string `json:"name"`
+				Version string `json:"version"`
+			} `json:"descriptor"`
+		}
+		var data partial
+
+		if err := json.Unmarshal([]byte(stdout), &data); err != nil {
+			tb.Errorf("expected to find a JSON report, but was unmarshalable: %+v", err)
+		}
+
+		assert.Equal(tb, name, data.Descriptor.Name, "unexpected tool name")
+		assert.Equal(tb, version, data.Descriptor.Version, "unexpected tool version")
 	}
 }
 

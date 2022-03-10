@@ -5,7 +5,6 @@ go 1.17
 require (
 	github.com/Microsoft/hcsshim v0.9.2 // indirect
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
-	github.com/adrg/xdg v0.2.1
 	github.com/anchore/stereoscope v0.0.0-20220307154759-8a5a70c227d3
 	github.com/anchore/syft v0.41.1
 	github.com/containerd/containerd v1.5.10 // indirect
@@ -16,7 +15,6 @@ require (
 	github.com/fvbommel/sortorder v1.0.2 // indirect
 	github.com/gookit/color v1.4.2
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/mitchellh/go-homedir v1.1.0
 	github.com/moby/sys/mount v0.3.0 // indirect
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
 	github.com/sirupsen/logrus v1.8.1
@@ -83,6 +81,7 @@ require (
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mholt/archiver/v3 v3.5.1 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
+	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/moby/sys/mountinfo v0.5.0 // indirect
