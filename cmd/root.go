@@ -33,6 +33,7 @@ Examples:
   docker sbom alpine:latest -o syft-json                           show all possible cataloging details
   docker sbom alpine:latest -o syft-json --file sbom.json          write report output to a file
   docker sbom alpine:latest -o table -o sbom.json=cyclonedx-json   report the SBOM in multiple formats
+  docker sbom alpine:latest --exclude /lib  --exclude '**/*.db'    ignore one or more paths in the image
   docker sbom alpine:latest -v                                     show logging output
   docker sbom alpine:latest -vv                                    show verbose debug logs`
 
@@ -78,7 +79,7 @@ func setPackageFlags(flags *pflag.FlagSet) {
 	// Formatting & Input options //////////////////////////////////////////////
 	flags.StringP(
 		"scope", "s", cataloger.DefaultSearchConfig().Scope.String(),
-		fmt.Sprintf("selection of layers to catalog, options=%v", source.AllScopes))
+		fmt.Sprintf("[experimental] selection of layers to catalog, options=%v", source.AllScopes))
 
 	flags.StringArrayP(
 		"output", "o", formatAliases(syft.TableFormatID),
