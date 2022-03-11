@@ -29,6 +29,19 @@ func TestSBOMCmdFlags(t *testing.T) {
 			},
 		},
 		{
+			name: "use-version-option",
+			args: []string{"sbom", "--version"},
+			assertions: []traitAssertion{
+				assertInOutput("Application:"),
+				assertInOutput("docker-sbom ("),
+				assertInOutput("Provider:"),
+				assertInOutput("GitDescription:"),
+				assertInOutput("syft (v0.41.1)"),
+				assertNotInOutput("not provided"),
+				assertSuccessfulReturnCode,
+			},
+		},
+		{
 			name: "json-output-flag",
 			args: []string{"sbom", "-o", "json", coverageImage},
 			assertions: []traitAssertion{

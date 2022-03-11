@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"text/template"
 
 	"github.com/docker/cli/cli/command"
 	"github.com/spf13/cobra"
@@ -47,12 +49,26 @@ func cmd(_ command.Cli) *cobra.Command {
 		Args:              validateInputArgs,
 		SilenceUsage:      true,
 		SilenceErrors:     true,
+		Version:           version.FromBuild().Version,
 		RunE:              run,
 		ValidArgsFunction: dockerImageValidArgsFunction,
 	}
 
-	// setting the version template to just print out the string since we already have a templatized version string
-	c.SetVersionTemplate(fmt.Sprintf("%s {{.Version}}\n", internal.ApplicationName))
+	c.SetVersionTemplate(tprintf(`Application:        {{ .Name }} ({{ .Version.Version }})
+Provider:           {{ .SyftName }} ({{ .SyftVersion }})
+BuildDate:          {{ .BuildDate }}
+GitCommit:          {{ .GitCommit }}
+GitDescription:     {{ .GitDescription }}
+Platform:           {{ .Platform }}
+`, struct {
+		Name     string
+		SyftName string
+		version.Version
+	}{
+		Name:     internal.BinaryName,
+		SyftName: internal.SyftName,
+		Version:  version.FromBuild(),
+	}))
 
 	setPackageFlags(c.Flags())
 
@@ -61,6 +77,15 @@ func cmd(_ command.Cli) *cobra.Command {
 	}
 
 	return c
+}
+
+func tprintf(tmpl string, data interface{}) string {
+	t := template.Must(template.New("").Parse(tmpl))
+	buf := &bytes.Buffer{}
+	if err := t.Execute(buf, data); err != nil {
+		return ""
+	}
+	return buf.String()
 }
 
 func setPackageFlags(flags *pflag.FlagSet) {
@@ -132,6 +157,7 @@ func bindConfigOptions(flags *pflag.FlagSet) error {
 
 	return nil
 }
+
 func validateInputArgs(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
 		// in the case that no arguments are given we want to show the help text and return with a non-0 return code.
