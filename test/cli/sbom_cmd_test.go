@@ -1,12 +1,11 @@
 package cli
 
 import (
-	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/anchore/docker-sbom-cli-plugin/internal"
+	"github.com/docker/sbom-cli-plugin/internal"
 )
 
 func TestSBOMCmdFlags(t *testing.T) {
@@ -23,14 +22,14 @@ func TestSBOMCmdFlags(t *testing.T) {
 			name: "no-args-shows-help",
 			args: []string{"sbom"},
 			assertions: []traitAssertion{
-				assertInOutput("an image argument is required"),                        // specific error that should be shown
-				assertInOutput("Generate a packaged-based Software Bill Of Materials"), // excerpt from help description
+				assertInOutput("an image argument is required"),                                          // specific error that should be shown
+				assertInOutput("View the packaged-based Software Bill Of Materials (SBOM) for an image"), // excerpt from help description
 				assertFailingReturnCode,
 			},
 		},
 		{
 			name: "use-version-option",
-			args: []string{"sbom", "--version"},
+			args: []string{"sbom", "version"},
 			assertions: []traitAssertion{
 				assertInOutput("Application:"),
 				assertInOutput("docker-sbom ("),
@@ -42,8 +41,18 @@ func TestSBOMCmdFlags(t *testing.T) {
 			},
 		},
 		{
-			name: "json-output-flag",
-			args: []string{"sbom", "-o", "json", coverageImage},
+			name: "use-short-version-option",
+			args: []string{"sbom", "--version"},
+			assertions: []traitAssertion{
+				assertInOutput("sbom-cli-plugin"),
+				assertInOutput(", build"),
+				assertNotInOutput("not provided"),
+				assertSuccessfulReturnCode,
+			},
+		},
+		{
+			name: "json-format-flag",
+			args: []string{"sbom", "--format", "json", coverageImage},
 			assertions: []traitAssertion{
 				assertJsonReport,
 				assertJsonDescriptor(internal.SyftName, "v0.41.1"),
@@ -52,24 +61,15 @@ func TestSBOMCmdFlags(t *testing.T) {
 			},
 		},
 		{
-			name: "multiple-output-flags",
-			args: []string{"sbom", "-o", "table", "-o", "json=" + tmp + ".tmp/multiple-output-flag-test.json", coverageImage},
-			assertions: []traitAssertion{
-				assertTableReport,
-				assertFileExists(tmp + ".tmp/multiple-output-flag-test.json"),
-				assertSuccessfulReturnCode,
-			},
-		},
-		{
-			name: "table-output-flag",
-			args: []string{"sbom", "-o", "table", coverageImage},
+			name: "table-format-flag",
+			args: []string{"sbom", "--format", "table", coverageImage},
 			assertions: []traitAssertion{
 				assertTableReport,
 				assertSuccessfulReturnCode,
 			},
 		},
 		{
-			name: "default-output-flag",
+			name: "default-format-flag",
 			args: []string{"sbom", coverageImage},
 			assertions: []traitAssertion{
 				assertTableReport,
@@ -78,7 +78,7 @@ func TestSBOMCmdFlags(t *testing.T) {
 		},
 		{
 			name: "squashed-scope-flag",
-			args: []string{"sbom", "-o", "json", "-s", "squashed", coverageImage},
+			args: []string{"sbom", "--format", "json", "--layers", "squashed", coverageImage},
 			assertions: []traitAssertion{
 				assertPackageCount(20),
 				assertSuccessfulReturnCode,
@@ -86,7 +86,7 @@ func TestSBOMCmdFlags(t *testing.T) {
 		},
 		{
 			name: "all-layers-scope-flag",
-			args: []string{"sbom", "-o", "json", "-s", "all-layers", coverageImage},
+			args: []string{"sbom", "--format", "json", "--layers", "all-layers", coverageImage},
 			assertions: []traitAssertion{
 				assertPackageCount(22),
 				assertSuccessfulReturnCode,
@@ -94,15 +94,15 @@ func TestSBOMCmdFlags(t *testing.T) {
 		},
 		{
 			name: "platform-option-wired-up",
-			args: []string{"sbom", "--platform", "arm64", "-o", "json", "busybox:1.31"},
+			args: []string{"sbom", "--platform", "arm64", "--format", "json", "busybox:1.31"},
 			assertions: []traitAssertion{
 				assertInOutput("sha256:dcd4bbdd7ea2360002c684968429a2105997c3ce5821e84bfc2703c5ec984971"), // linux/arm64 image digest
 				assertSuccessfulReturnCode,
 			},
 		},
 		{
-			name: "json-file-flag",
-			args: []string{"sbom", "-o", "json", "--file", filepath.Join(tmp, "output-1.json"), coverageImage},
+			name: "json-output-flag",
+			args: []string{"sbom", "--format", "json", "--output", filepath.Join(tmp, "output-1.json"), coverageImage},
 			assertions: []traitAssertion{
 				assertSuccessfulReturnCode,
 				assertFileOutput(t, filepath.Join(tmp, "output-1.json"),
@@ -111,8 +111,8 @@ func TestSBOMCmdFlags(t *testing.T) {
 			},
 		},
 		{
-			name: "json-output-flag-to-file",
-			args: []string{"sbom", "-o", fmt.Sprintf("json=%s", filepath.Join(tmp, "output-2.json")), coverageImage},
+			name: "json-short-output-flag",
+			args: []string{"sbom", "--format", "json", "-o", filepath.Join(tmp, "output-2.json"), coverageImage},
 			assertions: []traitAssertion{
 				assertSuccessfulReturnCode,
 				assertFileOutput(t, filepath.Join(tmp, "output-2.json"),

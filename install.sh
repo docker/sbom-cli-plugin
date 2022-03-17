@@ -2,8 +2,8 @@
 # note: we require errors to propagate (don't set -e)
 set -u
 
-PROJECT_NAME="docker-sbom-cli-plugin"
-OWNER=anchore
+PROJECT_NAME="sbom-cli-plugin"
+OWNER=docker
 REPO="${PROJECT_NAME}"
 GITHUB_DOWNLOAD_PREFIX=https://github.com/${OWNER}/${REPO}/releases/download
 INSTALL_SH_BASE_URL=https://raw.githubusercontent.com/${OWNER}/${PROJECT_NAME}

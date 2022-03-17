@@ -1,5 +1,5 @@
 BIN = docker-sbom
-REPO = docker-sbom-cli-plugin
+REPO = sbom-cli-plugin
 
 TEMP_DIR = ./.tmp
 DIST_DIR=./dist
@@ -119,7 +119,7 @@ check-go-mod-tidy:
 .PHONY: unit
 unit: $(RESULTS_DIR)  ## Run unit tests
 	$(call title,Running unit tests)
-	go test  -coverprofile $(COVER_REPORT) $(shell go list ./... | grep -v anchore/docker-sbom-cli-plugin/test)
+	go test  -coverprofile $(COVER_REPORT) $(shell go list ./... | grep -v docker/sbom-cli-plugin/test)
 	@go tool cover -func $(COVER_REPORT) | grep total |  awk '{print substr($$3, 1, length($$3)-1)}' > $(COVER_TOTAL)
 	@echo "Coverage: $$(cat $(COVER_TOTAL))"
 
