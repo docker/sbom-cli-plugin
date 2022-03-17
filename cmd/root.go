@@ -4,20 +4,20 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
 	"text/template"
 
 	"github.com/docker/cli/cli/command"
+	"github.com/docker/sbom-cli-plugin/internal"
+	"github.com/docker/sbom-cli-plugin/internal/bus"
+	"github.com/docker/sbom-cli-plugin/internal/log"
+	"github.com/docker/sbom-cli-plugin/internal/ui"
+	"github.com/docker/sbom-cli-plugin/internal/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/wagoodman/go-partybus"
 
-	"github.com/anchore/docker-sbom-cli-plugin/internal"
-	"github.com/anchore/docker-sbom-cli-plugin/internal/bus"
-	"github.com/anchore/docker-sbom-cli-plugin/internal/config"
-	"github.com/anchore/docker-sbom-cli-plugin/internal/log"
-	"github.com/anchore/docker-sbom-cli-plugin/internal/ui"
-	"github.com/anchore/docker-sbom-cli-plugin/internal/version"
 	"github.com/anchore/stereoscope"
 	"github.com/anchore/stereoscope/pkg/image"
 	"github.com/anchore/syft/syft"
@@ -27,24 +27,21 @@ import (
 	"github.com/anchore/syft/syft/source"
 )
 
-const helpExample = `docker sbom [options] [IMAGE]
-
-Examples:
-  docker sbom alpine:latest                                        a summary of discovered packages
-  docker sbom alpine:latest -o syft-json                           show all possible cataloging details
-  docker sbom alpine:latest -o syft-json --file sbom.json          write report output to a file
-  docker sbom alpine:latest -o table -o sbom.json=cyclonedx-json   report the SBOM in multiple formats
-  docker sbom alpine:latest --exclude /lib  --exclude '**/*.db'    ignore one or more paths in the image
-  docker sbom alpine:latest -v                                     show logging output
-  docker sbom alpine:latest -vv                                    show verbose debug logs`
-
-var cliOnlyOpts = config.CliOnlyOptions{}
+const (
+	helpExample = `
+  docker sbom alpine:latest                                          a summary of discovered packages
+  docker sbom alpine:latest --format syft-json                       show all possible cataloging details
+  docker sbom alpine:latest --output sbom.json                       write report output to a file
+  docker sbom alpine:latest --exclude /lib  --exclude '**/*.db'      ignore one or more paths/globs in the image
+`
+	shortDescription = "View the packaged-based Software Bill Of Materials (SBOM) for an image"
+)
 
 func cmd(_ command.Cli) *cobra.Command {
 	c := &cobra.Command{
 		Use:               "sbom",
-		Short:             "Generate a package SBOM",
-		Long:              "Generate a packaged-based Software Bill Of Materials (SBOM) from Docker images",
+		Short:             shortDescription,
+		Long:              shortDescription + ".\n\nEXPERIMENTAL: The flags and outputs of this command may change. Leave feedback on https://github.com/docker/sbom-cli-plugin.",
 		Example:           helpExample,
 		Args:              validateInputArgs,
 		SilenceUsage:      true,
@@ -54,27 +51,15 @@ func cmd(_ command.Cli) *cobra.Command {
 		ValidArgsFunction: dockerImageValidArgsFunction,
 	}
 
-	c.SetVersionTemplate(tprintf(`Application:        {{ .Name }} ({{ .Version.Version }})
-Provider:           {{ .SyftName }} ({{ .SyftVersion }})
-BuildDate:          {{ .BuildDate }}
-GitCommit:          {{ .GitCommit }}
-GitDescription:     {{ .GitDescription }}
-Platform:           {{ .Platform }}
-`, struct {
-		Name     string
-		SyftName string
-		version.Version
-	}{
-		Name:     internal.BinaryName,
-		SyftName: internal.SyftName,
-		Version:  version.FromBuild(),
-	}))
+	c.SetVersionTemplate(fmt.Sprintf("%s {{.Version}}, build %s\n", internal.ApplicationName, version.FromBuild().GitCommit))
 
 	setPackageFlags(c.Flags())
 
 	if err := bindConfigOptions(c.Flags()); err != nil {
 		panic(fmt.Errorf("unable to bind config options: %w", err))
 	}
+
+	c.AddCommand(versionCmd())
 
 	return c
 }
@@ -88,30 +73,44 @@ func tprintf(tmpl string, data interface{}) string {
 	return buf.String()
 }
 
+func allScopes() (result []string) {
+	for _, s := range source.AllScopes {
+		result = append(result, cleanScope(s))
+	}
+	return result
+}
+
+func cleanScope(s source.Scope) string {
+	var opt string
+	switch s {
+	case source.AllLayersScope:
+		opt = "all"
+	case source.SquashedScope:
+		opt = "squashed"
+	default:
+		opt = strings.ToLower(string(s))
+	}
+	return opt
+}
+
 func setPackageFlags(flags *pflag.FlagSet) {
-	// Universal options ///////////////////////////////////////////////////////
-
-	flags.StringVarP(&cliOnlyOpts.ConfigPath, "config", "c", "", "application config file")
-
 	flags.BoolP(
-		"quiet", "q", false,
-		"suppress all logging output",
+		"quiet", "", false,
+		"suppress all non-report output",
 	)
 
-	flags.CountVarP(&cliOnlyOpts.Verbosity, "verbose", "v", "increase verbosity (-v = info, -vv = debug)")
-
-	// Formatting & Input options //////////////////////////////////////////////
 	flags.StringP(
-		"scope", "s", cataloger.DefaultSearchConfig().Scope.String(),
-		fmt.Sprintf("[experimental] selection of layers to catalog, options=%v", source.AllScopes))
+		"layers", "", cleanScope(cataloger.DefaultSearchConfig().Scope),
+		fmt.Sprintf("[experimental] selection of layers to catalog, options=%v", allScopes()),
+	)
 
-	flags.StringArrayP(
-		"output", "o", formatAliases(syft.TableFormatID),
+	flags.StringP(
+		"format", "", formatAliases(syft.TableFormatID)[0],
 		fmt.Sprintf("report output format, options=%v", formatAliases(syft.FormatIDs()...)),
 	)
 
 	flags.StringP(
-		"file", "", "",
+		"output", "o", "",
 		"file to write the default report output to (default is STDOUT)",
 	)
 
@@ -124,26 +123,27 @@ func setPackageFlags(flags *pflag.FlagSet) {
 		"platform", "", "",
 		"an optional platform specifier for container image sources (e.g. 'linux/arm64', 'linux/arm64/v8', 'arm64', 'linux')",
 	)
+
+	flags.BoolP(
+		"debug", "D", false,
+		"show debug logging",
+	)
 }
 
 func bindConfigOptions(flags *pflag.FlagSet) error {
-	// Universal options ///////////////////////////////////////////////////////
-
 	if err := viper.BindPFlag("quiet", flags.Lookup("quiet")); err != nil {
 		return err
 	}
-
-	// Formatting & Input options //////////////////////////////////////////////
 
 	if err := viper.BindPFlag("output", flags.Lookup("output")); err != nil {
 		return err
 	}
 
-	if err := viper.BindPFlag("package.cataloger.scope", flags.Lookup("scope")); err != nil {
+	if err := viper.BindPFlag("package.cataloger.scope", flags.Lookup("layers")); err != nil {
 		return err
 	}
 
-	if err := viper.BindPFlag("file", flags.Lookup("file")); err != nil {
+	if err := viper.BindPFlag("format", flags.Lookup("format")); err != nil {
 		return err
 	}
 
@@ -152,6 +152,10 @@ func bindConfigOptions(flags *pflag.FlagSet) error {
 	}
 
 	if err := viper.BindPFlag("platform", flags.Lookup("platform")); err != nil {
+		return err
+	}
+
+	if err := viper.BindPFlag("debug", flags.Lookup("debug")); err != nil {
 		return err
 	}
 
@@ -171,7 +175,7 @@ func validateInputArgs(cmd *cobra.Command, args []string) error {
 }
 
 func run(_ *cobra.Command, args []string) error {
-	writer, err := makeWriter(appConfig.Output, appConfig.File)
+	writer, err := makeWriter([]string{appConfig.Format}, appConfig.Output)
 	if err != nil {
 		return err
 	}
@@ -207,7 +211,7 @@ func isVerbose() (result bool) {
 		return true
 	}
 	// verbosity should consider if there is piped input (in which case we should not show the ETUI)
-	return appConfig.CliOptions.Verbosity > 0 || isPipedInput
+	return appConfig.Debug || isPipedInput
 }
 
 func generateSBOM(src *source.Source) (*sbom.SBOM, error) {
