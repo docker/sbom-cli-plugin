@@ -12,7 +12,7 @@ UNIT=make unit-local
 # acceptance testing is running the current install.sh against the latest release. Note: this could be a problem down
 # the line if there are breaking changes made that don't align with the latest release (but will be OK with the next
 # release)
-ACCEPTANCE_CMD=sh -c '../../install.sh -b /usr/local/bin  && docker sbom version'
+ACCEPTANCE_CMD=sh -c '../../install.sh && docker sbom version'
 
 # CI cache busting values; change these if you want CI to not use previous stored cache
 INSTALL_TEST_CACHE_BUSTER=894d8ca
