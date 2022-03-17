@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/viper"
 
@@ -19,10 +20,16 @@ func (cfg catalogerOptions) loadDefaultValues(v *viper.Viper) {
 }
 
 func (cfg *catalogerOptions) parseConfigValues() error {
+	cfg.Scope = strings.ToLower(cfg.Scope)
+	if cfg.Scope == "all" {
+		cfg.Scope = "all-layers"
+	}
+
 	scopeOption := source.ParseScope(cfg.Scope)
 	if scopeOption == source.UnknownScope {
 		return fmt.Errorf("bad scope value %q", cfg.Scope)
 	}
+
 	cfg.ScopeOpt = scopeOption
 
 	return nil
