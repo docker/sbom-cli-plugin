@@ -1,9 +1,9 @@
 package ui
 
 import (
+	"github.com/docker/sbom-cli-plugin/internal/log"
 	"github.com/wagoodman/go-partybus"
 
-	"github.com/anchore/docker-sbom-cli-plugin/internal/log"
 	syftEvent "github.com/anchore/syft/syft/event"
 )
 

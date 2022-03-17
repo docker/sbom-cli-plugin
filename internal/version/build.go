@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"runtime/debug"
 
-	"github.com/anchore/docker-sbom-cli-plugin/internal/log"
+	"github.com/docker/sbom-cli-plugin/internal/log"
 )
 
 const valueNotProvided = "[not provided]"
@@ -18,7 +18,6 @@ var (
 	version        = valueNotProvided
 	gitCommit      = valueNotProvided
 	gitDescription = valueNotProvided
-	buildDate      = valueNotProvided
 )
 
 // Version defines the application version details (generally from build information)
@@ -27,7 +26,6 @@ type Version struct {
 	SyftVersion    string `json:"syftVersion"`    // the version of syft being used by the docker-sbom-cli-plugin
 	GitCommit      string `json:"gitCommit"`      // git SHA at build-time
 	GitDescription string `json:"gitDescription"` // output of 'git describe --dirty --always --tags'
-	BuildDate      string `json:"buildDate"`      // date of the build
 	GoVersion      string `json:"goVersion"`      // go runtime version at build-time
 	Compiler       string `json:"compiler"`       // compiler used at build-time
 	Platform       string `json:"platform"`       // GOOS and GOARCH at build-time
@@ -40,7 +38,6 @@ func FromBuild() Version {
 		SyftVersion:    syftVersion(),
 		GitCommit:      gitCommit,
 		GitDescription: gitDescription,
-		BuildDate:      buildDate,
 		GoVersion:      runtime.Version(),
 		Compiler:       runtime.Compiler,
 		Platform:       fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),

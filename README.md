@@ -8,7 +8,7 @@ Plugin for Docker CLI to support SBOM creation using Syft.
 
 ```
 # install the docker-sbom plugin
-curl -sSfL https://raw.githubusercontent.com/anchore/docker-sbom-cli-plugin/main/install.sh | sh -s --
+curl -sSfL https://raw.githubusercontent.com/docker/sbom-cli-plugin/main/install.sh | sh -s --
 
 # use the sbom plugin
 docker sbom <my-image>

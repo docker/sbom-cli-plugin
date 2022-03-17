@@ -20,28 +20,26 @@ type parser interface {
 
 // Application is the main syft application configuration.
 type Application struct {
-	Package    pkg            `yaml:"package" json:"package" mapstructure:"package"`
-	Exclusions []string       `yaml:"exclude" json:"exclude" mapstructure:"exclude"`
-	Platform   string         `yaml:"platform" json:"platform" mapstructure:"platform"`
-	File       string         `yaml:"file" json:"file" mapstructure:"file"`       // --file, the file to write report output to
-	Output     []string       `yaml:"output" json:"output" mapstructure:"output"` // -o, the format to use for output
-	Quiet      bool           `yaml:"quiet" json:"quiet" mapstructure:"quiet"`    // -q, indicates to not show any status output to stderr (ETUI or logging UI)
-	Log        logging        `yaml:"log" json:"log" mapstructure:"log"`          // all logging-related options
-	CliOptions CliOnlyOptions `yaml:"-" json:"-"`                                 // all options only available through the CLI (not via env vars or config)
+	Package    pkg      `yaml:"package" json:"package" mapstructure:"package"`    // package cataloging related options
+	Exclusions []string `yaml:"exclude" json:"exclude" mapstructure:"exclude"`    // --exclude, ignore paths within an image
+	Platform   string   `yaml:"platform" json:"platform" mapstructure:"platform"` // --platform, override OS and architecture from image
+	Output     string   `yaml:"output" json:"output" mapstructure:"output"`       // --output, the file to write report output to
+	Format     string   `yaml:"format" json:"format" mapstructure:"format"`       // --format, the format to use for output
+	Quiet      bool     `yaml:"quiet" json:"quiet" mapstructure:"quiet"`          // -q, indicates to not show any status output to stderr (ETUI or logging UI)
+	Log        logging  `yaml:"log" json:"log" mapstructure:"log"`                // all logging-related options
+	Debug      bool     `yaml:"debug" json:"debug" mapstructure:"debug"`          // -D/--debug, enable debug logging
 }
 
-func newApplicationConfig(v *viper.Viper, cliOpts CliOnlyOptions) *Application {
-	config := &Application{
-		CliOptions: cliOpts,
-	}
+func newApplicationConfig(v *viper.Viper) *Application {
+	config := &Application{}
 	config.loadDefaultValues(v)
 	return config
 }
 
 // LoadApplicationConfig populates the given viper object with a default application config values
-func LoadApplicationConfig(v *viper.Viper, cliOpts CliOnlyOptions) (*Application, error) {
+func LoadApplicationConfig(v *viper.Viper) (*Application, error) {
 	// the user may not have a config, and this is OK, we can use the default config + default cobra cli values instead
-	config := newApplicationConfig(v, cliOpts)
+	config := newApplicationConfig(v)
 
 	// TODO: in the future when we have a user-modifiable configuration, reading such contents would be here
 
@@ -100,33 +98,16 @@ func (cfg *Application) parseLogLevelOption() error {
 	case cfg.Quiet:
 		cfg.Log.LevelOpt = logrus.PanicLevel
 	case cfg.Log.Level != "":
-		if cfg.CliOptions.Verbosity > 0 {
-			return fmt.Errorf("cannot explicitly set log level (cfg file or env var) and use -v flag together")
-		}
-
 		lvl, err := logrus.ParseLevel(strings.ToLower(cfg.Log.Level))
 		if err != nil {
 			return fmt.Errorf("bad log level configured (%q): %w", cfg.Log.Level, err)
 		}
 
 		cfg.Log.LevelOpt = lvl
-		if cfg.Log.LevelOpt >= logrus.InfoLevel {
-			cfg.CliOptions.Verbosity = 1
-		}
+	case cfg.Debug:
+		cfg.Log.LevelOpt = logrus.DebugLevel
 	default:
-
-		switch v := cfg.CliOptions.Verbosity; {
-		case v == 1:
-			cfg.Log.LevelOpt = logrus.InfoLevel
-		case v >= 2:
-			cfg.Log.LevelOpt = logrus.DebugLevel
-		default:
-			cfg.Log.LevelOpt = logrus.WarnLevel
-		}
-	}
-
-	if cfg.Log.Level == "" {
-		cfg.Log.Level = cfg.Log.LevelOpt.String()
+		cfg.Log.LevelOpt = logrus.WarnLevel
 	}
 
 	return nil

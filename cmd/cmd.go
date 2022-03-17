@@ -8,17 +8,17 @@ import (
 
 	"github.com/docker/cli/cli-plugins/manager"
 	"github.com/docker/cli/cli-plugins/plugin"
+	"github.com/docker/sbom-cli-plugin/internal"
+	"github.com/docker/sbom-cli-plugin/internal/bus"
+	"github.com/docker/sbom-cli-plugin/internal/config"
+	"github.com/docker/sbom-cli-plugin/internal/log"
+	"github.com/docker/sbom-cli-plugin/internal/logger"
+	"github.com/docker/sbom-cli-plugin/internal/version"
 	"github.com/gookit/color"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/wagoodman/go-partybus"
 
-	"github.com/anchore/docker-sbom-cli-plugin/internal"
-	"github.com/anchore/docker-sbom-cli-plugin/internal/bus"
-	"github.com/anchore/docker-sbom-cli-plugin/internal/config"
-	"github.com/anchore/docker-sbom-cli-plugin/internal/log"
-	"github.com/anchore/docker-sbom-cli-plugin/internal/logger"
-	"github.com/anchore/docker-sbom-cli-plugin/internal/version"
 	"github.com/anchore/stereoscope"
 	"github.com/anchore/syft/syft"
 )
@@ -43,15 +43,17 @@ func Execute() {
 	plugin.Run(
 		cmd,
 		manager.Metadata{
-			SchemaVersion: internal.SchemaVersion,
-			Vendor:        "Anchore Inc.",
-			Version:       version.FromBuild().Version,
+			SchemaVersion:    internal.SchemaVersion,
+			Vendor:           "Anchore Inc.",
+			Version:          version.FromBuild().Version,
+			ShortDescription: shortDescription,
+			URL:              "https://github.com/docker/sbom-cli-plugin",
 		},
 	)
 }
 
 func initAppConfig() {
-	cfg, err := config.LoadApplicationConfig(viper.GetViper(), cliOnlyOpts)
+	cfg, err := config.LoadApplicationConfig(viper.GetViper())
 	if err != nil {
 		fmt.Printf("failed to load application config: \n\t%+v\n", err)
 		os.Exit(1)
@@ -62,7 +64,7 @@ func initAppConfig() {
 
 func initLogging() {
 	cfg := logger.LogrusConfig{
-		EnableConsole: (appConfig.Log.FileLocation == "" || appConfig.CliOptions.Verbosity > 0) && !appConfig.Quiet,
+		EnableConsole: (appConfig.Log.FileLocation == "" || appConfig.Debug) && !appConfig.Quiet,
 		EnableFile:    appConfig.Log.FileLocation != "",
 		Level:         appConfig.Log.LevelOpt,
 		Structured:    appConfig.Log.Structured,

@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/docker/sbom-cli-plugin/internal/log"
+	"github.com/docker/sbom-cli-plugin/internal/ui"
 	"github.com/hashicorp/go-multierror"
 	"github.com/wagoodman/go-partybus"
-
-	"github.com/anchore/docker-sbom-cli-plugin/internal/log"
-	"github.com/anchore/docker-sbom-cli-plugin/internal/ui"
 )
 
 // eventLoop listens to worker errors (from execution path), worker events (from a partybus subscription), and

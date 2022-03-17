@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/docker/sbom-cli-plugin/internal/ui"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/wagoodman/go-partybus"
 
-	"github.com/anchore/docker-sbom-cli-plugin/internal/ui"
 	"github.com/anchore/syft/syft/event"
 )
 

@@ -23,7 +23,7 @@ func TestAllFormatsExpressible(t *testing.T) {
 
 	for _, o := range syft.FormatIDs() {
 		t.Run(fmt.Sprintf("format:%s", o), func(t *testing.T) {
-			cmd, stdout, stderr := runSyft(t, nil, "sbom", imageStr, "-o", string(o))
+			cmd, stdout, stderr := runSyft(t, nil, "sbom", imageStr, "--format", string(o))
 			for _, traitFn := range commonAssertions {
 				traitFn(t, stdout, stderr, cmd.ProcessState.ExitCode())
 			}

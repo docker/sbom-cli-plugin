@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/docker/sbom-cli-plugin/internal"
 	"github.com/stretchr/testify/require"
 
-	"github.com/anchore/docker-sbom-cli-plugin/internal"
 	"github.com/anchore/stereoscope/pkg/imagetest"
 )
 

@@ -1,4 +1,4 @@
-module github.com/anchore/docker-sbom-cli-plugin
+module github.com/docker/sbom-cli-plugin
 
 go 1.17
 

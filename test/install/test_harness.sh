@@ -153,29 +153,29 @@ snapshot_checksums_path() {
 snapshot_assets_count() {
   # example output before wc -l:
 
-  #  ../../snapshot/docker-sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_linux_arm64.deb
-  #  ../../snapshot/docker-sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_linux_arm64.tar.gz
-  #  ../../snapshot/docker-sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_darwin_arm64.tar.gz
-  #  ../../snapshot/docker-sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_darwin_amd64.tar.gz
-  #  ../../snapshot/docker-sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_windows_amd64.zip
-  #  ../../snapshot/docker-sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_windows_arm64.zip
+  #  ../../snapshot/sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_linux_arm64.deb
+  #  ../../snapshot/sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_linux_arm64.tar.gz
+  #  ../../snapshot/sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_darwin_arm64.tar.gz
+  #  ../../snapshot/sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_darwin_amd64.tar.gz
+  #  ../../snapshot/sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_windows_amd64.zip
+  #  ../../snapshot/sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_windows_arm64.zip
 
-  echo "$(find ../../snapshot -maxdepth 1 -type f | grep 'docker-sbom-cli-plugin_' | grep -v checksums | wc -l | tr -d '[:space:]')"
+  echo "$(find ../../snapshot -maxdepth 1 -type f | grep 'sbom-cli-plugin_' | grep -v checksums | wc -l | tr -d '[:space:]')"
 }
 
 
 snapshot_assets_archive_count() {
   # example output before wc -l:
 
-  #  ../../snapshot/docker-sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_linux_arm64.tar.gz
-  #  ../../snapshot/docker-sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_darwin_arm64.tar.gz
-  #  ../../snapshot/docker-sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_darwin_amd64.zip
-  #  ../../snapshot/docker-sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_windows_amd64.zip
-  #  ../../snapshot/docker-sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_windows_arm4.zip
-  #  ../../snapshot/docker-sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_linux_amd64.tar.gz
-  #  ../../snapshot/docker-sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_darwin_amd64.tar.gz
+  #  ../../snapshot/sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_linux_arm64.tar.gz
+  #  ../../snapshot/sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_darwin_arm64.tar.gz
+  #  ../../snapshot/sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_darwin_amd64.zip
+  #  ../../snapshot/sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_windows_amd64.zip
+  #  ../../snapshot/sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_windows_arm4.zip
+  #  ../../snapshot/sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_linux_amd64.tar.gz
+  #  ../../snapshot/sbom-cli-plugin_0.1.0-SNAPSHOT-e5e847a_darwin_amd64.tar.gz
 
-  echo "$(find ../../snapshot -maxdepth 1  -type f | grep 'docker-sbom-cli-plugin_' | grep 'tar\|zip' | wc -l | tr -d '[:space:]')"
+  echo "$(find ../../snapshot -maxdepth 1  -type f | grep 'sbom-cli-plugin_' | grep 'tar\|zip' | wc -l | tr -d '[:space:]')"
 }
 
 
