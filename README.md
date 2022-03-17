@@ -1,6 +1,6 @@
-# docker-sbom-cli-plugin
+# sbom-cli-plugin
 
-Plugin for Docker CLI to support SBOM creation using Syft.
+Plugin for Docker CLI to support viewing and creating SBOMs for Docker images using Syft.
 
 **Note: this is a proof of concept / work in progress**
 
