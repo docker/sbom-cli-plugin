@@ -68,7 +68,7 @@ $(RESULTS_DIR):
 bootstrap-tools:
 	$(call title,Bootstrapping tools)
 	mkdir -p $(TEMP_DIR)
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TEMP_DIR)/ v1.42.1
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TEMP_DIR)/ v1.45.0
 	curl -sSfL https://raw.githubusercontent.com/wagoodman/go-bouncer/master/bouncer.sh | sh -s -- -b $(TEMP_DIR)/ v0.3.0
 	curl -sSfL https://raw.githubusercontent.com/anchore/chronicle/main/install.sh | sh -s -- -b $(TEMP_DIR)/ v0.3.0
 	.github/scripts/goreleaser-install.sh -b $(TEMP_DIR)/ v1.5.0
