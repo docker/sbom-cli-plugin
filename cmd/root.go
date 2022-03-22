@@ -2,8 +2,11 @@ package cmd
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
+	"github.com/anchore/stereoscope/pkg/file"
+	"github.com/anchore/stereoscope/pkg/image"
 	"strings"
 	"text/template"
 
@@ -19,7 +22,7 @@ import (
 	"github.com/wagoodman/go-partybus"
 
 	"github.com/anchore/stereoscope"
-	"github.com/anchore/stereoscope/pkg/image"
+	stereoscopeDocker "github.com/anchore/stereoscope/pkg/image/docker"
 	"github.com/anchore/syft/syft"
 	"github.com/anchore/syft/syft/event"
 	"github.com/anchore/syft/syft/pkg/cataloger"
@@ -37,7 +40,7 @@ const (
 	shortDescription = "View the packaged-based Software Bill Of Materials (SBOM) for an image"
 )
 
-func cmd(_ command.Cli) *cobra.Command {
+func cmd(dockerCli command.Cli) *cobra.Command {
 	c := &cobra.Command{
 		Use:               "sbom",
 		Short:             shortDescription,
@@ -47,7 +50,7 @@ func cmd(_ command.Cli) *cobra.Command {
 		SilenceUsage:      true,
 		SilenceErrors:     true,
 		Version:           version.FromBuild().Version,
-		RunE:              run,
+		RunE:              newRunner(dockerCli).run,
 		ValidArgsFunction: dockerImageValidArgsFunction,
 	}
 
@@ -174,7 +177,17 @@ func validateInputArgs(cmd *cobra.Command, args []string) error {
 	return cobra.ExactArgs(1)(cmd, args)
 }
 
-func run(_ *cobra.Command, args []string) error {
+type runner struct {
+	client command.Cli
+}
+
+func newRunner(client command.Cli) runner {
+	return runner{
+		client: client,
+	}
+}
+
+func (r runner) run(_ *cobra.Command, args []string) error {
 	writer, err := makeWriter([]string{appConfig.Format}, appConfig.Output)
 	if err != nil {
 		return err
@@ -186,16 +199,16 @@ func run(_ *cobra.Command, args []string) error {
 		}
 	}()
 
-	si := source.Input{
-		UserInput:   args[0],
-		Scheme:      source.ImageScheme,
-		ImageSource: image.DockerDaemonSource,
-		Location:    args[0],
-		Platform:    appConfig.Platform,
+	var platform *image.Platform
+	if appConfig.Platform != "" {
+		platform, err = image.NewPlatform(appConfig.Platform)
+		if err != nil {
+			return fmt.Errorf("invalid platform provided: %w", err)
+		}
 	}
 
 	return eventLoop(
-		sbomExecWorker(si, writer),
+		sbomExecWorker(args[0], r.client, platform, writer),
 		setupSignals(),
 		eventSubscription,
 		stereoscope.Cleanup,
@@ -236,21 +249,42 @@ func generateSBOM(src *source.Source) (*sbom.SBOM, error) {
 	return &s, nil
 }
 
-func sbomExecWorker(si source.Input, writer sbom.Writer) <-chan error {
+func sbomExecWorker(userInput string, dockerCli command.Cli, platform *image.Platform, writer sbom.Writer) <-chan error {
 	errs := make(chan error)
 	go func() {
 		defer close(errs)
 
-		src, cleanup, err := source.New(si, nil, appConfig.Exclusions)
-		if cleanup != nil {
-			defer cleanup()
-		}
+		provider := stereoscopeDocker.NewProviderFromDaemon(
+			userInput,
+			file.NewTempDirGenerator(internal.ApplicationName),
+			dockerCli.Client(),
+			platform,
+		)
+		img, err := provider.Provide(context.Background())
+		defer func() {
+			if err := img.Cleanup(); err != nil {
+				log.Warnf("failed to clean up image: %+v", err)
+			}
+		}()
 		if err != nil {
-			errs <- fmt.Errorf("failed to construct source from user input %q: %w", si.UserInput, err)
+			errs <- fmt.Errorf("failed to fetch the image %q: %w", userInput, err)
 			return
 		}
 
-		s, err := generateSBOM(src)
+		err = img.Read()
+		if err != nil {
+			errs <- fmt.Errorf("failed to read the image %q: %w", userInput, err)
+			return
+		}
+
+		src, err := source.NewFromImage(img, userInput)
+		if err != nil {
+			errs <- fmt.Errorf("failed to construct source from user input %q: %w", userInput, err)
+			return
+		}
+		src.Exclusions = appConfig.Exclusions
+
+		s, err := generateSBOM(&src)
 		if err != nil {
 			errs <- err
 			return
