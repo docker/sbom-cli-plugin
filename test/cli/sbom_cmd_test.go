@@ -35,7 +35,7 @@ func TestSBOMCmdFlags(t *testing.T) {
 				assertInOutput("docker-sbom ("),
 				assertInOutput("Provider:"),
 				assertInOutput("GitDescription:"),
-				assertInOutput("syft (v0.41.1)"),
+				assertInOutput("syft (v0.42.2)"),
 				assertNotInOutput("not provided"),
 				assertSuccessfulReturnCode,
 			},
@@ -55,7 +55,7 @@ func TestSBOMCmdFlags(t *testing.T) {
 			args: []string{"sbom", "--format", "json", coverageImage},
 			assertions: []traitAssertion{
 				assertJsonReport,
-				assertJsonDescriptor(internal.SyftName, "v0.41.1"),
+				assertJsonDescriptor(internal.SyftName, "v0.42.2"),
 				assertNotInOutput("not provided"),
 				assertSuccessfulReturnCode,
 			},
