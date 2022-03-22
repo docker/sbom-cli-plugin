@@ -1,6 +1,6 @@
 module github.com/docker/sbom-cli-plugin
 
-go 1.17
+go 1.18
 
 require (
 	github.com/Microsoft/hcsshim v0.9.2 // indirect

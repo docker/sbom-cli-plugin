@@ -5,8 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/anchore/stereoscope/pkg/file"
-	"github.com/anchore/stereoscope/pkg/image"
 	"strings"
 	"text/template"
 
@@ -22,6 +20,8 @@ import (
 	"github.com/wagoodman/go-partybus"
 
 	"github.com/anchore/stereoscope"
+	"github.com/anchore/stereoscope/pkg/file"
+	"github.com/anchore/stereoscope/pkg/image"
 	stereoscopeDocker "github.com/anchore/stereoscope/pkg/image/docker"
 	"github.com/anchore/syft/syft"
 	"github.com/anchore/syft/syft/event"
