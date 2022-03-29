@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/Microsoft/hcsshim v0.9.2 // indirect
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
-	github.com/anchore/stereoscope v0.0.0-20220322123031-7a744f443e99
+	github.com/anchore/stereoscope v0.0.0-20220329150647-be0d56bc0917
 	github.com/anchore/syft v0.42.2
 	github.com/containerd/containerd v1.5.10 // indirect
 	github.com/containerd/continuity v0.2.2 // indirect
@@ -104,7 +104,7 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
-	github.com/scylladb/go-set v1.0.2 // indirect
+	github.com/scylladb/go-set v1.0.3-0.20200225121959-cc7b2070d91e // indirect
 	github.com/spdx/tools-golang v0.2.0 // indirect
 	github.com/spf13/afero v1.8.0 // indirect
 	github.com/spf13/cast v1.4.1 // indirect
