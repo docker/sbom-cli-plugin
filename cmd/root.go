@@ -207,8 +207,13 @@ func (r runner) run(_ *cobra.Command, args []string) error {
 		}
 	}
 
+	cleanImageName, err := cleanImageReference(args[0])
+	if err != nil {
+		return nil
+	}
+
 	return eventLoop(
-		sbomExecWorker(args[0], r.client, platform, writer),
+		sbomExecWorker(cleanImageName, r.client, platform, writer),
 		setupSignals(),
 		eventSubscription,
 		stereoscope.Cleanup,
@@ -249,13 +254,13 @@ func generateSBOM(src *source.Source) (*sbom.SBOM, error) {
 	return &s, nil
 }
 
-func sbomExecWorker(userInput string, dockerCli command.Cli, platform *image.Platform, writer sbom.Writer) <-chan error {
+func sbomExecWorker(imageName string, dockerCli command.Cli, platform *image.Platform, writer sbom.Writer) <-chan error {
 	errs := make(chan error)
 	go func() {
 		defer close(errs)
 
 		provider := stereoscopeDocker.NewProviderFromDaemon(
-			userInput,
+			imageName,
 			file.NewTempDirGenerator(internal.ApplicationName),
 			dockerCli.Client(),
 			platform,
@@ -267,19 +272,19 @@ func sbomExecWorker(userInput string, dockerCli command.Cli, platform *image.Pla
 			}
 		}()
 		if err != nil {
-			errs <- fmt.Errorf("failed to fetch the image %q: %w", userInput, err)
+			errs <- fmt.Errorf("failed to fetch the image %q: %w", imageName, err)
 			return
 		}
 
 		err = img.Read()
 		if err != nil {
-			errs <- fmt.Errorf("failed to read the image %q: %w", userInput, err)
+			errs <- fmt.Errorf("failed to read the image %q: %w", imageName, err)
 			return
 		}
 
-		src, err := source.NewFromImage(img, userInput)
+		src, err := source.NewFromImage(img, imageName)
 		if err != nil {
-			errs <- fmt.Errorf("failed to construct source from user input %q: %w", userInput, err)
+			errs <- fmt.Errorf("failed to construct source from user input %q: %w", imageName, err)
 			return
 		}
 		src.Exclusions = appConfig.Exclusions
