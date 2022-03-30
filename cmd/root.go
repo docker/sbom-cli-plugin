@@ -34,7 +34,7 @@ const (
 	helpExample = `
   docker sbom alpine:latest                                          a summary of discovered packages
   docker sbom alpine:latest --format syft-json                       show all possible cataloging details
-  docker sbom alpine:latest --output sbom.json                       write report output to a file
+  docker sbom alpine:latest --output sbom.txt                        write report output to a file
   docker sbom alpine:latest --exclude /lib  --exclude '**/*.db'      ignore one or more paths/globs in the image
 `
 	shortDescription = "View the packaged-based Software Bill Of Materials (SBOM) for an image"
