@@ -70,7 +70,7 @@ bootstrap-tools:
 	mkdir -p $(TEMP_DIR)
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TEMP_DIR)/ v1.45.0
 	curl -sSfL https://raw.githubusercontent.com/wagoodman/go-bouncer/master/bouncer.sh | sh -s -- -b $(TEMP_DIR)/ v0.3.0
-	curl -sSfL https://raw.githubusercontent.com/anchore/chronicle/main/install.sh | sh -s -- -b $(TEMP_DIR)/ v0.3.0
+	curl -sSfL https://raw.githubusercontent.com/anchore/chronicle/main/install.sh | sh -s -- -b $(TEMP_DIR)/ v0.4.1
 	.github/scripts/goreleaser-install.sh -b $(TEMP_DIR)/ v1.5.0
 	# the only difference between goimports and gosimports is that gosimports removes extra whitespace between import blocks (see https://github.com/golang/go/issues/20818)
 	GOBIN="$(shell realpath $(TEMP_DIR))" go install github.com/rinchsan/gosimports/cmd/gosimports@v0.1.5
