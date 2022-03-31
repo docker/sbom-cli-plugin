@@ -42,16 +42,15 @@ const (
 
 func cmd(dockerCli command.Cli) *cobra.Command {
 	c := &cobra.Command{
-		Use:               "sbom",
-		Short:             shortDescription,
-		Long:              shortDescription + ".\n\nEXPERIMENTAL: The flags and outputs of this command may change. Leave feedback on https://github.com/docker/sbom-cli-plugin.",
-		Example:           helpExample,
-		Args:              validateInputArgs,
-		SilenceUsage:      true,
-		SilenceErrors:     true,
-		Version:           version.FromBuild().Version,
-		RunE:              newRunner(dockerCli).run,
-		ValidArgsFunction: dockerImageValidArgsFunction,
+		Use:           "sbom",
+		Short:         shortDescription,
+		Long:          shortDescription + ".\n\nEXPERIMENTAL: The flags and outputs of this command may change. Leave feedback on https://github.com/docker/sbom-cli-plugin.",
+		Example:       helpExample,
+		Args:          validateInputArgs,
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		Version:       version.FromBuild().Version,
+		RunE:          newRunner(dockerCli).run,
 	}
 
 	c.SetVersionTemplate(fmt.Sprintf("%s {{.Version}}, build %s\n", internal.ApplicationName, version.FromBuild().GitCommit))

@@ -10,7 +10,7 @@ require (
 	github.com/containerd/containerd v1.5.10 // indirect
 	github.com/containerd/continuity v0.2.2 // indirect
 	github.com/docker/cli v20.10.12+incompatible
-	github.com/docker/docker v20.10.12+incompatible
+	github.com/docker/docker v20.10.12+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.6.4 // indirect
 	github.com/fvbommel/sortorder v1.0.2 // indirect
 	github.com/gookit/color v1.4.2
