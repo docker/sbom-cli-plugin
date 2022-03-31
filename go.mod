@@ -5,8 +5,8 @@ go 1.18
 require (
 	github.com/Microsoft/hcsshim v0.9.2 // indirect
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
-	github.com/anchore/stereoscope v0.0.0-20220330151554-fccf0ee7be68
-	github.com/anchore/syft v0.42.2
+	github.com/anchore/stereoscope v0.0.0-20220330165332-7fc73ee7b0f0
+	github.com/anchore/syft v0.43.0
 	github.com/containerd/containerd v1.5.10 // indirect
 	github.com/containerd/continuity v0.2.2 // indirect
 	github.com/docker/cli v20.10.12+incompatible
