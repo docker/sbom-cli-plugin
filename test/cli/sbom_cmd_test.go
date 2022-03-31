@@ -9,6 +9,7 @@ import (
 )
 
 func TestSBOMCmdFlags(t *testing.T) {
+	hiddenPackagesImage := getFixtureImage(t, "image-hidden-packages")
 	coverageImage := getFixtureImage(t, "image-pkg-coverage")
 	tmp := t.TempDir() + "/"
 
@@ -35,7 +36,7 @@ func TestSBOMCmdFlags(t *testing.T) {
 				assertInOutput("docker-sbom ("),
 				assertInOutput("Provider:"),
 				assertInOutput("GitDescription:"),
-				assertInOutput("syft (v0.42.2)"),
+				assertInOutput("syft (v0.43.0)"),
 				assertNotInOutput("not provided"),
 				assertSuccessfulReturnCode,
 			},
@@ -55,7 +56,7 @@ func TestSBOMCmdFlags(t *testing.T) {
 			args: []string{"sbom", "--format", "json", coverageImage},
 			assertions: []traitAssertion{
 				assertJsonReport,
-				assertJsonDescriptor(internal.SyftName, "v0.42.2"),
+				assertJsonDescriptor(internal.SyftName, "v0.43.0"),
 				assertNotInOutput("not provided"),
 				assertSuccessfulReturnCode,
 			},
@@ -78,17 +79,21 @@ func TestSBOMCmdFlags(t *testing.T) {
 		},
 		{
 			name: "squashed-scope-flag",
-			args: []string{"sbom", "--format", "json", "--layers", "squashed", coverageImage},
+			args: []string{"sbom", "--format", "json", "--layers", "squashed", hiddenPackagesImage},
 			assertions: []traitAssertion{
-				assertPackageCount(20),
+				assertPackageCount(162),
+				assertInOutput("squashed"),
+				assertNotInOutput("vsftpd"), // hidden package
 				assertSuccessfulReturnCode,
 			},
 		},
 		{
 			name: "all-layers-scope-flag",
-			args: []string{"sbom", "--format", "json", "--layers", "all-layers", coverageImage},
+			args: []string{"sbom", "--format", "json", "--layers", "all-layers", hiddenPackagesImage},
 			assertions: []traitAssertion{
-				assertPackageCount(22),
+				assertPackageCount(163),
+				assertInOutput("all-layers"),
+				assertInOutput("vsftpd"), // hidden package
 				assertSuccessfulReturnCode,
 			},
 		},
