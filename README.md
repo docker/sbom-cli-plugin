@@ -2,8 +2,6 @@
 
 Plugin for Docker CLI to support viewing and creating SBOMs for Docker images using Syft.
 
-**Note: this is a proof of concept / work in progress**
-
 ## Getting started
 
 ```
