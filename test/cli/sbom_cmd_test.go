@@ -9,6 +9,7 @@ import (
 )
 
 func TestSBOMCmdFlags(t *testing.T) {
+	hiddenPackagesImage := getFixtureImage(t, "image-hidden-packages")
 	coverageImage := getFixtureImage(t, "image-pkg-coverage")
 	tmp := t.TempDir() + "/"
 
@@ -78,17 +79,21 @@ func TestSBOMCmdFlags(t *testing.T) {
 		},
 		{
 			name: "squashed-scope-flag",
-			args: []string{"sbom", "--format", "json", "--layers", "squashed", coverageImage},
+			args: []string{"sbom", "--format", "json", "--layers", "squashed", hiddenPackagesImage},
 			assertions: []traitAssertion{
-				assertPackageCount(20),
+				assertPackageCount(162),
+				assertInOutput("squashed"),
+				assertNotInOutput("vsftpd"), // hidden package
 				assertSuccessfulReturnCode,
 			},
 		},
 		{
 			name: "all-layers-scope-flag",
-			args: []string{"sbom", "--format", "json", "--layers", "all-layers", coverageImage},
+			args: []string{"sbom", "--format", "json", "--layers", "all-layers", hiddenPackagesImage},
 			assertions: []traitAssertion{
-				assertPackageCount(22),
+				assertPackageCount(163),
+				assertInOutput("all-layers"),
+				assertInOutput("vsftpd"), // hidden package
 				assertSuccessfulReturnCode,
 			},
 		},
