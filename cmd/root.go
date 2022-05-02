@@ -97,7 +97,7 @@ func cleanScope(s source.Scope) string {
 
 func setPackageFlags(flags *pflag.FlagSet) {
 	flags.BoolP(
-		"quiet", "", false,
+		"quiet", "q", false,
 		"suppress all non-report output",
 	)
 
