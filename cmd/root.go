@@ -258,15 +258,17 @@ func sbomExecWorker(imageName string, dockerCli command.Cli, platform *image.Pla
 	go func() {
 		defer close(errs)
 
+		tempGen := file.NewTempDirGenerator(internal.ApplicationName)
+
 		provider := stereoscopeDocker.NewProviderFromDaemon(
 			imageName,
-			file.NewTempDirGenerator(internal.ApplicationName),
+			tempGen,
 			dockerCli.Client(),
 			platform,
 		)
 		img, err := provider.Provide(context.Background())
 		defer func() {
-			if err := img.Cleanup(); err != nil {
+			if err := tempGen.Cleanup(); err != nil {
 				log.Warnf("failed to clean up image: %+v", err)
 			}
 		}()
