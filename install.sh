@@ -640,7 +640,7 @@ main() (
   tag=$1
 
   if [ "${install_dir}" = "${DEFAULT_INSTALL_DIR}" ]; then
-    if [ ! -d "${DOCKER_HOME}" ]; then
+    if [ ! -d "${DOCKER_HOME}" ] && ! which docker > /dev/null 2>&1; then
       log_err "docker is not installed; refusing to install to '${install_dir}'"
       exit 1
     fi
