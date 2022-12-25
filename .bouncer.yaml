@@ -20,3 +20,4 @@ ignore-packages:
   # All these files have been put into the public domain.
   # You can do whatever you want with these files.
   - github.com/xi2/xz
+  - crypto/internal/boring
