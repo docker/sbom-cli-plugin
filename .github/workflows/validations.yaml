@@ -16,22 +16,22 @@ jobs:
     name: "Static analysis"
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # v2
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
 
       - name: Restore tool cache
         id: tool-cache
-        uses: actions/cache@v2.1.3
+        uses: actions/cache@0781355a23dac32fd3bac414512f4b903437991a # v2.1.3
         with:
           path: ${{ github.workspace }}/.tmp
           key: ${{ runner.os }}-tool-${{ hashFiles('Makefile') }}
 
       - name: Restore go cache
         id: go-cache
-        uses: actions/cache@v2.1.3
+        uses: actions/cache@0781355a23dac32fd3bac414512f4b903437991a # v2.1.3
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ hashFiles('**/go.sum') }}
@@ -59,22 +59,22 @@ jobs:
     name: "Unit tests"
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # v2
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
 
       - name: Restore tool cache
         id: tool-cache
-        uses: actions/cache@v2.1.3
+        uses: actions/cache@0781355a23dac32fd3bac414512f4b903437991a # v2.1.3
         with:
           path: ${{ github.workspace }}/.tmp
           key: ${{ runner.os }}-tool-${{ hashFiles('Makefile') }}
 
       - name: Restore go cache
         id: go-cache
-        uses: actions/cache@v2.1.3
+        uses: actions/cache@0781355a23dac32fd3bac414512f4b903437991a # v2.1.3
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ hashFiles('**/go.sum') }}
@@ -92,22 +92,22 @@ jobs:
     name: "Build snapshot artifacts"
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # v2
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
 
       - name: Restore tool cache
         id: tool-cache
-        uses: actions/cache@v2.1.3
+        uses: actions/cache@0781355a23dac32fd3bac414512f4b903437991a # v2.1.3
         with:
           path: ${{ github.workspace }}/.tmp
           key: ${{ runner.os }}-tool-${{ hashFiles('Makefile') }}
 
       - name: Restore go cache
         id: go-cache
-        uses: actions/cache@v2.1.3
+        uses: actions/cache@0781355a23dac32fd3bac414512f4b903437991a # v2.1.3
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ hashFiles('**/go.sum') }}
@@ -121,7 +121,7 @@ jobs:
       - name: Build snapshot artifacts
         run: make snapshot
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@82c141cc518b40d92cc801eee768e7aafc9c2fa2 # v2
         with:
           name: artifacts
           path: snapshot/**/*
@@ -132,8 +132,8 @@ jobs:
     needs: [Build-Snapshot-Artifacts]
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
+      - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281 # v2
         with:
           name: artifacts
           path: snapshot
@@ -143,14 +143,14 @@ jobs:
 
       - name: Restore install.sh test image cache
         id: install-test-image-cache
-        uses: actions/cache@v2.1.3
+        uses: actions/cache@0781355a23dac32fd3bac414512f4b903437991a # v2.1.3
         with:
           path: ${{ github.workspace }}/test/install/cache
           key: ${{ runner.os }}-install-test-image-cache-${{ hashFiles('test/install/cache.fingerprint') }}
 
       - name: Restore tool cache
         id: tool-cache
-        uses: actions/cache@v2.1.3
+        uses: actions/cache@0781355a23dac32fd3bac414512f4b903437991a # v2.1.3
         with:
           path: ${{ github.workspace }}/.tmp
           key: ${{ runner.os }}-tool-${{ hashFiles('Makefile') }}
@@ -172,9 +172,9 @@ jobs:
     needs: [Build-Snapshot-Artifacts]
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281 # v2
         with:
           name: artifacts
           path: snapshot
@@ -193,11 +193,11 @@ jobs:
     needs: [Build-Snapshot-Artifacts]
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@bfdd3570ce990073878bf10f6b2d79082de49492 # v2
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2
         with:
           # this downloads and initializes LFS, but does not pull the objects
           lfs: true
@@ -206,7 +206,7 @@ jobs:
 
       - name: Restore go cache
         id: go-cache
-        uses: actions/cache@v2.1.3
+        uses: actions/cache@0781355a23dac32fd3bac414512f4b903437991a # v2.1.3
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ hashFiles('**/go.sum') }}
@@ -215,7 +215,7 @@ jobs:
 
       - name: Restore tool cache
         id: tool-cache
-        uses: actions/cache@v2.1.3
+        uses: actions/cache@0781355a23dac32fd3bac414512f4b903437991a # v2.1.3
         with:
           path: ${{ github.workspace }}/.tmp
           key: ${{ runner.os }}-tool-${{ hashFiles('Makefile') }}
@@ -228,12 +228,12 @@ jobs:
         run: make cli-fingerprint
 
       - name: Restore CLI test cache
-        uses: actions/cache@v2.1.3
+        uses: actions/cache@0781355a23dac32fd3bac414512f4b903437991a # v2.1.3
         with:
           path: ${{ github.workspace }}/test/cli/test-fixtures/cache
           key: ${{ runner.os }}-cli-test-cache-${{ hashFiles('test/cli/test-fixtures/cache.fingerprint') }}
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281 # v2
         with:
           name: artifacts
           path: snapshot
