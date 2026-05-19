@@ -8,6 +8,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/docker/cli/cli"
 	"github.com/docker/cli/cli/command"
 	"github.com/docker/sbom-cli-plugin/internal"
 	"github.com/docker/sbom-cli-plugin/internal/bus"
@@ -50,7 +51,15 @@ func cmd(dockerCli command.Cli) *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Version:       version.FromBuild().Version,
-		RunE:          newRunner(dockerCli).run,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return cmd.Help()
+			}
+			return cli.StatusError{
+				StatusCode: 1,
+				Status:     `error: docker sbom has been removed, please use "docker scout sbom" command instead`,
+			}
+		},
 	}
 
 	c.SetVersionTemplate(fmt.Sprintf("%s {{.Version}}, build %s\n", internal.ApplicationName, version.FromBuild().GitCommit))

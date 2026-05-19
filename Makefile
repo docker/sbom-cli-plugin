@@ -10,6 +10,7 @@ COVER_TOTAL = $(RESULTS_DIR)/unit-coverage-summary.txt
 LINT_CMD = $(TEMP_DIR)/golangci-lint run --tests=false --timeout=2m --config .golangci.yaml
 GOIMPORTS_CMD = $(TEMP_DIR)/gosimports -local github.com/anchore
 RELEASE_CMD=$(TEMP_DIR)/goreleaser release --rm-dist
+RELEASE_FLAGS=""
 SNAPSHOT_CMD=$(RELEASE_CMD) --skip-publish --rm-dist --snapshot
 OS=$(shell uname | tr '[:upper:]' '[:lower:]')
 SNAPSHOT_BIN=$(shell realpath $(shell pwd)/$(SNAPSHOT_DIR)/$(REPO)_$(OS)_amd64/$(BIN))
@@ -150,22 +151,18 @@ cli-fingerprint:
 	find test/cli/test-fixtures/image-* -type f -exec md5sum {} + | awk '{print $1}' | sort | md5sum | tee test/cli/test-fixtures/cache.fingerprint && echo "$(CLI_CACHE_BUSTER)" >> test/cli/test-fixtures/cache.fingerprint
 
 .PHONY: cli
-cli: $(SNAPSHOT_DIR) ## Run CLI tests
-	chmod 755 "$(SNAPSHOT_BIN)"
-	SYFT_BINARY_LOCATION='$(SNAPSHOT_BIN)' \
-		go test -count=1 -v ./test/cli
-
-$(SNAPSHOT_DIR): $(TEMP_DIR) ## Build snapshot release binaries and packages
+cli:
 	$(call title,Building snapshot artifacts)
-	# create a config with the dist dir overridden
 	echo "dist: $(SNAPSHOT_DIR)" > $(TEMP_DIR)/goreleaser.yaml
 	cat .goreleaser.yaml >> $(TEMP_DIR)/goreleaser.yaml
-
 	$(SNAPSHOT_CMD) --config $(TEMP_DIR)/goreleaser.yaml
-
 
 .PHONY: install-snapshot
 install-snapshot:
+	cp $(SNAPSHOT_BIN) ~/.docker/cli-plugins/
+
+.PHONY: install
+install: cli
 	cp $(SNAPSHOT_BIN) ~/.docker/cli-plugins/
 
 .PHONY: changelog
@@ -186,7 +183,7 @@ validate-syft-release-version:
 .PHONY: release
 release: clean-dist CHANGELOG.md
 	$(call title,Publishing release artifacts)
-	bash -c "$(RELEASE_CMD) --release-notes <(cat CHANGELOG.md)"
+	bash -c "$(RELEASE_CMD) $(RELEASE_FLAGS) --release-notes <(cat CHANGELOG.md)"
 
 .PHONY: clean
 clean: clean-dist clean-snapshot  ## Remove previous builds, result reports, and test cache
